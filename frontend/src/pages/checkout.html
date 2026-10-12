@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>A little adventure awaits — PawInn checkout</title>
+    <link rel="icon" href="/assets/icons/paw.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="checkout">
+    <!-- include:header -->
+    <main id="main" class="wrap" x-data="checkout">
+      <div class="page-intro">
+        <a href="/pages/bookings.html" class="text-link mb-5"
+          >← Back to my bookings</a
+        >
+        <p class="eyebrow">ALMOST READY FOR THEIR LITTLE GETAWAY</p>
+        <h1>One last little step.</h1>
+        <p class="muted text-sm">
+          Make their stay official with a quick demo checkout.
+        </p>
+      </div>
+      <!-- include:customer-gate -->
+      <section x-show="$store.portal.user?.role==='CUSTOMER'" x-cloak>
+        <div class="empty" x-show="!booking">
+          <h3>Let’s find their stay first.</h3>
+          <p>
+            This booking is unavailable, or it belongs to another demo account.
+            Choose a room to start a new reservation.
+          </p>
+          <a href="/pages/rooms.html" class="btn btn-primary">Find a room →</a>
+        </div>
+        <template x-if="booking"
+          ><div>
+            <div
+              x-show="booking.status==='CONFIRMED' && booking.paymentStatus==='SUCCESS'"
+              class="card padded text-center max-w-2xl mx-auto"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-sage text-green-800 flex items-center justify-center text-2xl mx-auto mb-5"
+                aria-hidden="true"
+              >
+                ✓
+              </div>
+              <p class="eyebrow mb-3">A HAPPY LITTLE ADVENTURE AWAITS</p>
+              <h2 class="text-4xl">They’re on the guest list.</h2>
+              <p class="text-sm muted mt-4">
+                <span x-text="booking.petName"></span>’s stay is confirmed. No
+                real payment was made.
+              </p>
+              <div
+                class="bg-paper rounded-xl p-5 mt-6 text-left max-w-sm mx-auto"
+              >
+                <div class="summary-line">
+                  <span class="muted">Booking reference</span
+                  ><strong x-text="booking.id"></strong>
+                </div>
+                <div class="summary-line">
+                  <span class="muted">Room</span
+                  ><span x-text="typeFor(booking.typeId).name"></span>
+                </div>
+                <div class="summary-line">
+                  <span class="muted">Check-in</span
+                  ><span x-text="dateLabel(booking.start)"></span>
+                </div>
+                <div class="summary-line">
+                  <span class="muted">Check-out</span
+                  ><span x-text="dateLabel(booking.end)"></span>
+                </div>
+                <div class="summary-line border-t border-stone-200">
+                  <span>Demo payment</span
+                  ><strong x-text="money(booking.total)"></strong>
+                </div>
+              </div>
+              <a href="/pages/bookings.html" class="btn btn-primary mt-6"
+                >View my bookings →</a
+              >
+            </div>
+            <div
+              x-show="!['PENDING','CONFIRMED'].includes(booking.status)"
+              class="empty"
+            >
+              <h3
+                x-text="booking.status==='EXPIRED'?'That little hold has expired.':'This stay is no longer awaiting payment.'"
+              ></h3>
+              <p>
+                Checkout is available only for pending reservations. Find a
+                fresh set of dates or visit your bookings for details.
+              </p>
+              <a href="/pages/rooms.html" class="btn btn-primary"
+                >Explore available rooms →</a
+              >
+            </div>
+            <div
+              x-show="booking.status==='PENDING'"
+              class="grid lg:grid-cols-[1.25fr_.75fr] gap-7 items-start"
+            >
+              <section class="card padded">
+                <div
+                  class="flex flex-wrap justify-between items-center gap-3 mb-6"
+                >
+                  <h2 class="text-3xl">A simple, pretend payment.</h2>
+                  <span class="badge badge-pending"
+                    >Held for <span x-text="countdown"></span
+                  ></span>
+                </div>
+                <div
+                  class="rounded-2xl bg-[#e8e4ef] p-6 flex items-center justify-between gap-4"
+                >
+                  <div>
+                    <p class="eyebrow text-[#71607c]">PAWINN DEMO CHECKOUT</p>
+                    <p class="font-semibold mt-3">
+                      All the experience. None of the charge.
+                    </p>
+                    <p class="text-xs muted mt-2 max-w-sm">
+                      No card details needed. Choose a result below to explore
+                      the checkout flow.
+                    </p>
+                  </div>
+                  <span class="text-4xl text-[#8b7396]" aria-hidden="true"
+                    >✳</span
+                  >
+                </div>
+                <form @submit.prevent="submit()" class="mt-6 space-y-5">
+                  <fieldset>
+                    <legend class="font-semibold text-sm mb-3">
+                      Simulate a payment result
+                    </legend>
+                    <div class="grid sm:grid-cols-2 gap-3">
+                      <label
+                        class="flex gap-3 items-start border rounded-xl p-4 cursor-pointer"
+                        :class="result==='success'?'border-clay bg-orange-50/40':'border-stone-200'"
+                        ><input
+                          type="radio"
+                          name="result"
+                          value="success"
+                          x-model="result"
+                          class="mt-1 shrink-0"
+                        /><span
+                          ><span class="block text-sm">Successful payment</span
+                          ><span class="text-[11px] muted font-normal"
+                            >Confirm this little getaway</span
+                          ></span
+                        ></label
+                      ><label
+                        class="flex gap-3 items-start border rounded-xl p-4 cursor-pointer"
+                        :class="result==='failed'?'border-clay bg-orange-50/40':'border-stone-200'"
+                        ><input
+                          type="radio"
+                          name="result"
+                          value="failed"
+                          x-model="result"
+                          class="mt-1 shrink-0"
+                        /><span
+                          ><span class="block text-sm">Declined payment</span
+                          ><span class="text-[11px] muted font-normal"
+                            >Try the retry experience</span
+                          ></span
+                        ></label
+                      >
+                    </div>
+                  </fieldset>
+                  <label class="flex gap-3 items-start font-normal"
+                    ><input
+                      type="checkbox"
+                      x-model="accepted"
+                      class="shrink-0 mt-1"
+                    /><span class="text-xs muted"
+                      >I understand this checkout is simulated. No money moves
+                      and no real hotel reservation is created.</span
+                    ></label
+                  >
+                  <p
+                    class="error"
+                    x-show="error"
+                    x-text="error"
+                    role="alert"
+                  ></p>
+                  <button
+                    class="btn btn-primary w-full"
+                    :disabled="busy || !seconds"
+                    x-text="busy?'Making it official…':'Simulate payment · '+money(booking.total)+' →'"
+                  ></button>
+                  <p class="text-[10px] muted text-center">
+                    Sample prices in Thai baht. No additional demo fees.
+                  </p>
+                </form>
+              </section>
+              <aside class="card">
+                <img
+                  :src="'/assets/images/'+typeFor(booking.typeId).image"
+                  :alt="'Illustration of '+typeFor(booking.typeId).name"
+                  class="w-full aspect-[1.9] object-cover"
+                />
+                <div class="padded">
+                  <p class="eyebrow mb-3">THEIR LITTLE GETAWAY</p>
+                  <h2
+                    class="text-3xl"
+                    x-text="typeFor(booking.typeId).name"
+                  ></h2>
+                  <p class="text-sm muted mt-2">
+                    For <strong x-text="booking.petName"></strong> ·
+                    <span x-text="booking.id"></span>
+                  </p>
+                  <div class="mt-5 border-t border-stone-200 pt-3">
+                    <div class="summary-line">
+                      <span class="muted">Check-in</span
+                      ><span x-text="dateLabel(booking.start)"></span>
+                    </div>
+                    <div class="summary-line">
+                      <span class="muted">Check-out</span
+                      ><span x-text="dateLabel(booking.end)"></span>
+                    </div>
+                    <div class="summary-line">
+                      <span
+                        class="muted"
+                        x-text="nights(booking.start,booking.end)+' nights × '+money(booking.rate)"
+                      ></span
+                      ><span x-text="money(booking.total)"></span>
+                    </div>
+                    <div
+                      class="summary-line border-t border-stone-200 mt-2 pt-4"
+                    >
+                      <strong>Total</strong
+                      ><strong
+                        class="text-xl"
+                        x-text="money(booking.total)"
+                      ></strong>
+                    </div>
+                  </div>
+                  <p class="notice mt-4">
+                    Plans changed? Upcoming confirmed bookings can be submitted
+                    for staff cancellation review.
+                  </p>
+                </div>
+              </aside>
+            </div>
+          </div></template
+        >
+      </section>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore PawInn’s illustrated dog and cat rooms and check demo availability."
+    />
+    <title>Find their happy place — PawInn</title>
+    <link rel="icon" href="/assets/icons/paw.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="rooms">
+    <!-- include:header -->
+    <main id="main" class="wrap" x-data="rooms">
+      <div class="page-intro">
+        <p class="eyebrow">A SPACE FOR EVERY PERSONALITY</p>
+        <h1>Find their happy place.</h1>
+        <p class="muted text-sm">
+          A cozy den, a sunny suite, or a lofty little lookout. Where will they
+          settle in?
+        </p>
+      </div>
+      <form @submit.prevent="search()" class="search-bar">
+        <label
+          >Check-in<input
+            type="date"
+            x-model="start"
+            :min="today()"
+            required
+            @input="checked=false" /></label
+        ><label
+          >Check-out<input
+            type="date"
+            x-model="end"
+            :min="start?addDays(start,1):today()"
+            required
+            @input="checked=false" /></label
+        ><label
+          >Your travel buddy<select x-model="species">
+            <option value="All">All pets</option>
+            <option>Dog</option>
+            <option>Cat</option>
+          </select></label
+        ><button class="btn btn-dark">Check availability →</button>
+      </form>
+      <p
+        class="error mt-4"
+        x-show="error"
+        x-cloak
+        x-text="error"
+        role="alert"
+      ></p>
+      <div class="notice mt-4" x-show="!checked && !error" x-cloak>
+        Dates changed. Check availability to refresh your results.
+      </div>
+      <section x-show="checked" x-cloak class="mt-9">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-3xl">A room of their own.</h2>
+            <p class="muted text-xs mt-2">
+              <span x-text="filtered.length"></span> room types ·
+              <span x-text="nights(start,end)"></span> nights ·
+              <span x-text="dateLabel(start)"></span> –
+              <span x-text="dateLabel(end)"></span>
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <label class="sr-only" for="room-search">Search rooms</label
+            ><input
+              id="room-search"
+              type="search"
+              x-model="query"
+              placeholder="Find a comfort…"
+              class="!w-44 !min-h-10 !py-2 text-xs"
+            /><label class="sr-only" for="room-sort">Sort rooms</label
+            ><select
+              id="room-sort"
+              x-model="sort"
+              class="!w-40 !min-h-10 !py-2 text-xs"
+            >
+              <option value="recommended">Our favorites</option>
+              <option value="price">Price: low to high</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-5">
+          <template x-for="room in filtered" :key="room.id"
+            ><!-- include:roomcard --></template
+          >
+        </div>
+        <div class="empty" x-show="!filtered.length">
+          <h3>No rooms match that search.</h3>
+          <p>Try a different pet type or search term.</p>
+          <button class="btn btn-outline" @click="query='';species='All'">
+            Clear filters
+          </button>
+        </div>
+      </section>
+      <section
+        class="mt-12 grid sm:grid-cols-3 gap-7 border-t border-stone-200 pt-8"
+      >
+        <div>
+          <p class="eyebrow mb-3">THEIR OWN LITTLE SPACE</p>
+          <p class="text-sm muted">
+            One pet per room keeps each stay personal and comfortable.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow mb-3">A FAMILIAR ROUTINE</p>
+          <p class="text-sm muted">
+            Add feeding preferences and care notes in their pet profile.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow mb-3">A LITTLE FLEXIBILITY</p>
+          <p class="text-sm muted">
+            Request cancellation from your bookings. Our demo staff reviews each
+            request.
+          </p>
+        </div>
+      </section>
+      <div
+        class="modal-overlay"
+        x-show="selected"
+        x-cloak
+        @click.self="selected=null"
+        @keydown.escape.window="selected=null"
+        x-trap.inert.noscroll="selected"
+      >
+        <section
+          class="modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reserve-title"
+        >
+          <div class="modal-title">
+            <div>
+              <p class="eyebrow mb-2">LET THE LITTLE ADVENTURE BEGIN</p>
+              <h2 id="reserve-title">Who’s checking in?</h2>
+            </div>
+            <button
+              class="icon-btn shrink-0"
+              @click="selected=null"
+              aria-label="Close reservation"
+            >
+              ✕
+            </button>
+          </div>
+          <template x-if="selected"
+            ><div>
+              <img
+                :src="'/assets/images/'+selected.image"
+                :alt="'Illustration of '+selected.name"
+                class="w-full h-36 object-cover rounded-xl mb-4"
+              />
+              <h3 class="text-lg" x-text="selected.name"></h3>
+              <p class="muted text-xs mt-1">
+                <span x-text="dateLabel(start)"></span> –
+                <span x-text="dateLabel(end)"></span>
+              </p>
+              <div class="summary-line border-b border-stone-200 my-3">
+                <span
+                  x-text="nights(start,end)+' nights × '+money(selected.rate)"
+                ></span
+                ><strong
+                  x-text="money(nights(start,end)*selected.rate)"
+                ></strong>
+              </div>
+              <form
+                @submit.prevent="book()"
+                class="space-y-4"
+                x-show="suitablePets.length"
+              >
+                <label
+                  >Your pet<select x-model="petId" required>
+                    <option value="" disabled>Choose a pet</option>
+                    <template x-for="pet in suitablePets" :key="pet.id"
+                      ><option
+                        :value="pet.id"
+                        x-text="pet.name+' · '+pet.species"
+                      ></option
+                    ></template></select
+                ></label>
+                <p class="text-xs muted">
+                  Your room will be held for 15 minutes while you complete demo
+                  checkout.
+                </p>
+                <p
+                  class="error"
+                  x-show="reserveError"
+                  x-text="reserveError"
+                  role="alert"
+                ></p>
+                <button
+                  class="btn btn-primary w-full"
+                  :disabled="busy"
+                  x-text="busy?'Reserving your room…':'Continue to checkout →'"
+                ></button>
+              </form>
+              <div class="notice" x-show="!suitablePets.length">
+                <p>
+                  You haven’t added a
+                  <span x-text="selected.species.toLowerCase()"></span> profile
+                  yet. Let’s meet them first.
+                </p>
+                <a href="/pages/pets.html" class="text-link mt-3"
+                  >Add a pet profile →</a
+                >
+              </div>
+            </div></template
+          >
+        </section>
+      </div>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

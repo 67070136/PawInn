@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Behind the happy stays — PawInn staff</title>
+    <link rel="icon" href="/assets/icons/paw.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="staff">
+    <!-- include:header -->
+    <main id="main" class="wrap" x-data="staff">
+      <div class="page-intro flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p class="eyebrow">THE LITTLE THINGS BEHIND EVERY HAPPY STAY</p>
+          <h1>Hello, PawInn team.</h1>
+          <p class="muted text-sm">
+            A thoughtful overview of the guests in your care.
+          </p>
+        </div>
+        <span class="badge bg-[#e8e4ef] text-[#71607c]">STAFF DEMO PORTAL</span>
+      </div>
+      <div class="empty" x-show="$store.portal.user?.role!=='STAFF'" x-cloak>
+        <h3>A little space for our team.</h3>
+        <p>
+          Use the staff demo account to review cancellation requests and manage
+          stay status.
+        </p>
+        <a
+          href="/pages/login.html?next=%2Fpages%2Fstaff-dashboard.html"
+          class="btn btn-dark"
+          >Sign in as staff →</a
+        >
+      </div>
+      <section x-show="$store.portal.user?.role==='STAFF'" x-cloak>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <article class="card stat-card">
+            <p class="eyebrow">IN-HOUSE GUESTS</p>
+            <strong x-text="occupied"></strong>
+            <p class="text-xs muted mt-2">of 6 sample rooms occupied</p>
+          </article>
+          <article class="card stat-card">
+            <p class="eyebrow">TODAY’S ARRIVALS</p>
+            <strong x-text="arrivals"></strong>
+            <p class="text-xs muted mt-2" x-text="dateLabel(today())"></p>
+          </article>
+          <article class="card stat-card bg-[#edf0e6]">
+            <p class="eyebrow">WAITING FOR A LITTLE CARE</p>
+            <strong x-text="requests.length"></strong>
+            <p class="text-xs muted mt-2">cancellation requests to review</p>
+          </article>
+          <article class="card stat-card">
+            <p class="eyebrow">CONFIRMED STAYS</p>
+            <strong
+              x-text="all.filter(b=>b.status==='CONFIRMED').length"
+            ></strong>
+            <p class="text-xs muted mt-2">upcoming and current guests</p>
+          </article>
+        </div>
+        <div
+          class="mt-10 flex flex-wrap items-center justify-between gap-4 mb-6"
+        >
+          <div class="tabs" aria-label="Staff views">
+            <button
+              @click="tab='requests'"
+              :class="{'selected':tab==='requests'}"
+              :aria-pressed="tab==='requests'"
+            >
+              Cancellation requests
+              <span x-text="requests.length" class="ml-1"></span></button
+            ><button
+              @click="tab='bookings'"
+              :class="{'selected':tab==='bookings'}"
+              :aria-pressed="tab==='bookings'"
+            >
+              All bookings
+            </button>
+          </div>
+          <div>
+            <label class="sr-only" for="staff-search"
+              >Search by customer, pet or booking</label
+            ><input
+              id="staff-search"
+              x-model="query"
+              type="search"
+              placeholder="Customer, pet or booking ID"
+              class="!w-60 !py-2 text-xs"
+            />
+          </div>
+        </div>
+        <div class="card" x-show="items.length">
+          <div class="table-wrap">
+            <table>
+              <caption
+                class="sr-only"
+                x-text="tab==='requests'?'Pending cancellation requests':'All demo bookings'"
+              ></caption>
+              <thead>
+                <tr>
+                  <th scope="col">Booking / guest</th>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Stay</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Total</th>
+                  <th scope="col">Next step</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="booking in items" :key="booking.id"
+                  ><tr>
+                    <td>
+                      <p class="font-semibold" x-text="booking.petName"></p>
+                      <p
+                        class="text-[10px] muted mt-1"
+                        x-text="booking.id+' · '+typeFor(booking.typeId).name"
+                      ></p>
+                    </td>
+                    <td x-text="customer(booking.userId)"></td>
+                    <td>
+                      <p x-text="dateLabel(booking.start)"></p>
+                      <p
+                        class="muted text-[10px]"
+                        x-text="'to '+dateLabel(booking.end)"
+                      ></p>
+                    </td>
+                    <td>
+                      <span
+                        :class="badge(booking.status)"
+                        x-text="booking.status"
+                      ></span>
+                      <p
+                        class="text-[10px] muted mt-1"
+                        x-show="booking.cancellation"
+                        x-text="'Request: '+(booking.cancellation?.status||'')"
+                      ></p>
+                    </td>
+                    <td x-text="money(booking.total)"></td>
+                    <td>
+                      <button
+                        x-show="booking.cancellation?.status==='PENDING'"
+                        class="btn btn-soft btn-sm"
+                        @click="openReview(booking,true)"
+                      >
+                        Review request ↗</button
+                      ><button
+                        x-show="booking.status==='CONFIRMED' && booking.end<=today()"
+                        class="btn btn-outline btn-sm"
+                        @click="finish(booking)"
+                      >
+                        Complete stay</button
+                      ><span
+                        class="muted text-xs"
+                        x-show="booking.cancellation?.status!=='PENDING' && !(booking.status==='CONFIRMED' && booking.end<=today())"
+                        >All settled for now</span
+                      >
+                    </td>
+                  </tr></template
+                >
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="empty" x-show="!items.length">
+          <span class="text-3xl text-[#8e9a77]" aria-hidden="true">✳</span>
+          <h3
+            x-text="query?'No matching stays.':'A little breathing room.'"
+          ></h3>
+          <p
+            x-text="query?'Try another customer name, pet name or booking reference.':'No cancellation requests are waiting. Try the customer demo to submit a request, then return here to review it.'"
+          ></p>
+          <a href="/pages/login.html" class="text-link" x-show="!query"
+            >Explore the customer demo →</a
+          >
+        </div>
+        <p class="notice mt-7">
+          Demo policy: approved cancellations receive a full simulated refund.
+          Declined requests keep their booking confirmed. Access controls here
+          are visual only; real permissions will be enforced by the backend.
+        </p>
+      </section>
+      <div
+        class="modal-overlay"
+        x-show="target"
+        x-cloak
+        @click.self="target=null"
+        @keydown.escape.window="target=null"
+        x-trap.inert.noscroll="target"
+      >
+        <section
+          class="modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="review-title"
+        >
+          <div class="modal-title">
+            <div>
+              <p class="eyebrow mb-2" x-text="target?.id"></p>
+              <h2 id="review-title">A change of plans.</h2>
+            </div>
+            <button
+              class="icon-btn shrink-0"
+              @click="target=null"
+              aria-label="Close staff review"
+            >
+              ✕
+            </button>
+          </div>
+          <template x-if="target"
+            ><div>
+              <div class="summary-line">
+                <span class="muted">Guest / customer</span
+                ><span
+                  ><strong x-text="target.petName"></strong> /
+                  <span x-text="customer(target.userId)"></span
+                ></span>
+              </div>
+              <div class="summary-line">
+                <span class="muted">Demo payment</span
+                ><strong x-text="money(target.total)"></strong>
+              </div>
+              <div class="notice my-4">
+                <p class="eyebrow mb-2">CUSTOMER’S REASON</p>
+                <p x-text="target.cancellation.reason"></p>
+              </div>
+              <form @submit.prevent="submitReview()" class="space-y-4">
+                <fieldset>
+                  <legend class="text-sm font-semibold mb-3">
+                    Your decision
+                  </legend>
+                  <div class="flex gap-5">
+                    <label class="flex items-center gap-2"
+                      ><input
+                        type="radio"
+                        name="decision"
+                        value="true"
+                        x-model.boolean="approved"
+                      />Approve & refund</label
+                    ><label class="flex items-center gap-2"
+                      ><input
+                        type="radio"
+                        name="decision"
+                        value="false"
+                        x-model.boolean="approved"
+                      />Decline</label
+                    >
+                  </div>
+                </fieldset>
+                <label
+                  >Review note<textarea
+                    x-model="note"
+                    rows="3"
+                    maxlength="1000"
+                    required
+                    placeholder="Leave a helpful note for the customer."
+                  ></textarea>
+                </label>
+                <p class="error" x-show="error" x-text="error" role="alert"></p>
+                <p
+                  class="text-xs muted"
+                  x-text="approved?'This releases the room and issues a full demo refund.':'The stay remains confirmed and no refund is issued.'"
+                ></p>
+                <button
+                  class="btn btn-primary w-full"
+                  x-text="approved?'Approve cancellation →':'Decline request →'"
+                ></button>
+              </form></div
+          ></template>
+        </section>
+      </div>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

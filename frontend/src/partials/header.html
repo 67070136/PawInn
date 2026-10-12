@@ -1,0 +1,176 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="demo-bar">
+  A little preview of PawInn · Browser-only demo · No real reservations or
+  payments
+  <span class="hidden sm:inline"
+    >— <a href="/pages/login.html">Try a demo account</a></span
+  >
+</div>
+<header class="site-header">
+  <div class="wrap header-row">
+    <a href="/" class="brand" aria-label="PawInn home"
+      ><span class="brand-mark"
+        ><svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <ellipse
+            cx="5.5"
+            cy="8"
+            rx="2.2"
+            ry="3"
+            transform="rotate(-25 5.5 8)"
+          />
+          <ellipse cx="10" cy="5.5" rx="2.2" ry="3" />
+          <ellipse
+            cx="15.3"
+            cy="6"
+            rx="2.2"
+            ry="3"
+            transform="rotate(15 15.3 6)"
+          />
+          <ellipse
+            cx="19"
+            cy="10"
+            rx="2.2"
+            ry="2.8"
+            transform="rotate(30 19 10)"
+          />
+          <path
+            d="M5.5 17c0-2 2.2-3 3.2-5 1.4-2.9 4.7-2.9 6.2 0 1.1 2 3.6 3.5 3.6 5.3 0 2.8-3.1 3.6-6.5 2.1-3.6 1.5-6.5.5-6.5-2.4Z"
+          /></svg></span
+      >PawInn<span class="text-clay">.</span></a
+    >
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a
+        href="/"
+        class="nav-link"
+        :class="{'active':active('home')}"
+        :aria-current="active('home')?'page':null"
+        >Home</a
+      >
+      <a
+        href="/pages/rooms.html"
+        class="nav-link"
+        :class="{'active':active('rooms')}"
+        :aria-current="active('rooms')?'page':null"
+        >Our rooms</a
+      >
+      <a
+        href="/pages/pets.html"
+        class="nav-link"
+        :class="{'active':active('pets')}"
+        :aria-current="active('pets')?'page':null"
+        >My pets</a
+      >
+      <a
+        href="/pages/bookings.html"
+        class="nav-link"
+        :class="{'active':active('bookings')}"
+        :aria-current="active('bookings')?'page':null"
+        >My bookings</a
+      >
+    </nav>
+    <div class="desktop-actions flex items-center gap-3">
+      <a
+        href="/pages/login.html"
+        class="text-sm font-medium"
+        x-show="!$store.portal.user"
+        >Sign in</a
+      >
+      <a href="/pages/rooms.html" class="btn btn-dark"
+        >Book a stay <span aria-hidden="true">↗</span></a
+      >
+      <div
+        class="relative"
+        x-show="$store.portal.user"
+        x-cloak
+        @click.outside="profileOpen=false"
+        @keydown.escape.window="profileOpen=false"
+      >
+        <button
+          class="avatar"
+          @click="profileOpen=!profileOpen"
+          :aria-expanded="profileOpen"
+          aria-controls="profile-menu"
+          aria-label="Open account options"
+          x-text="initials"
+        ></button>
+        <div
+          id="profile-menu"
+          class="profile-menu"
+          x-show="profileOpen"
+          x-transition
+        >
+          <div class="px-3 py-2 border-b border-stone-100 mb-1">
+            <p
+              class="font-semibold text-sm"
+              x-text="$store.portal.user?.name"
+            ></p>
+            <p
+              class="text-xs muted"
+              x-text="$store.portal.user?.role==='STAFF'?'Staff demo account':'Customer demo account'"
+            ></p>
+          </div>
+          <a
+            href="/pages/bookings.html"
+            x-show="$store.portal.user?.role==='CUSTOMER'"
+            >My bookings</a
+          >
+          <a
+            href="/pages/staff-dashboard.html"
+            x-show="$store.portal.user?.role==='STAFF'"
+            >Staff dashboard</a
+          >
+          <button @click="signOut()">Sign out</button>
+        </div>
+      </div>
+    </div>
+    <button
+      class="icon-btn md:hidden"
+      @click="mobileOpen=!mobileOpen"
+      :aria-expanded="mobileOpen"
+      aria-controls="mobile-nav"
+      aria-label="Toggle navigation"
+    >
+      <svg
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        aria-hidden="true"
+      >
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+  <nav
+    id="mobile-nav"
+    class="mobile-nav"
+    aria-label="Mobile navigation"
+    x-show="mobileOpen"
+    x-cloak
+    @keydown.escape.window="mobileOpen=false"
+  >
+    <a href="/">Home</a><a href="/pages/rooms.html">Our rooms</a
+    ><a href="/pages/pets.html">My pets</a
+    ><a href="/pages/bookings.html">My bookings</a>
+    <a href="/pages/login.html" x-show="!$store.portal.user">Sign in</a
+    ><a
+      href="/pages/staff-dashboard.html"
+      x-show="$store.portal.user?.role==='STAFF'"
+      >Staff dashboard</a
+    ><button
+      class="btn btn-outline mt-2"
+      x-show="$store.portal.user"
+      @click="signOut()"
+    >
+      Sign out
+    </button>
+  </nav>
+</header>

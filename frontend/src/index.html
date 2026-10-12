@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="PawInn pet hotel portal. Explore cozy rooms and plan a happy stay for your dog or cat."
+    />
+    <title>PawInn — Their happy place</title>
+    <link rel="icon" href="/assets/icons/paw.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="home">
+    <!-- include:header -->
+    <main id="main" class="wrap">
+      <section class="hero">
+        <div>
+          <span class="eyebrow inline-flex items-center gap-2"
+            ><span class="w-1.5 h-1.5 rounded-full bg-clay"></span>A LITTLE
+            HOTEL. A LOT OF HEART.</span
+          >
+          <h1>Their happy place,<br />while you’re <em>away.</em></h1>
+          <p class="hero-copy">
+            Cozy corners, new friends, and all the little comforts of home. A
+            stay for them. Peace of mind for you.
+          </p>
+          <div class="flex flex-wrap gap-3 mt-7">
+            <a href="/pages/rooms.html" class="btn btn-primary"
+              >Find their perfect stay <span aria-hidden="true">↗</span></a
+            ><a href="#how-it-works" class="btn btn-outline">How it works</a>
+          </div>
+          <div class="flex items-center gap-3 mt-8">
+            <span class="flex -space-x-2"
+              ><img
+                src="/assets/images/dog.svg"
+                class="w-9 h-9 rounded-full border-2 border-paper bg-[#eed9bb]"
+                alt=""
+                width="36"
+                height="36" /><img
+                src="/assets/images/cat.svg"
+                class="w-9 h-9 rounded-full border-2 border-paper bg-[#d9decc]"
+                alt=""
+                width="36"
+                height="36"
+            /></span>
+            <p class="text-[11px] muted">
+              For big personalities<br /><span class="text-ink font-medium"
+                >and little paws.</span
+              >
+            </p>
+          </div>
+        </div>
+        <div class="hero-art">
+          <img
+            src="/assets/images/happy-place.svg"
+            alt="A cozy illustrated pet room with a resting dog, a cat on the windowsill, and a sunny garden"
+            width="600"
+            height="530"
+            fetchpriority="high"
+          />
+          <div class="float-label">
+            <span
+              class="w-9 h-9 bg-sage rounded-full flex items-center justify-center text-green-800"
+              aria-hidden="true"
+              >♡</span
+            >
+            <div>
+              <strong class="font-semibold">Feels like a second home.</strong>
+              <p class="muted text-[10px]">A little comfort goes a long way.</p>
+            </div>
+          </div>
+          <span
+            class="absolute right-2 top-8 text-3xl text-clay"
+            aria-hidden="true"
+            >✳</span
+          >
+        </div>
+      </section>
+      <form class="search-bar" @submit.prevent="searchStay($event)">
+        <label
+          >Check-in<input
+            type="date"
+            name="start"
+            :min="today()"
+            :value="addDays(today(),10)"
+            required /></label
+        ><label
+          >Check-out<input
+            type="date"
+            name="end"
+            :min="addDays(today(),1)"
+            :value="addDays(today(),13)"
+            required /></label
+        ><label
+          >Who’s coming?<select name="species">
+            <option value="All">A dog or a cat</option>
+            <option>Dog</option>
+            <option>Cat</option>
+          </select></label
+        ><button class="btn btn-dark" type="submit">
+          Explore available rooms <span aria-hidden="true">→</span>
+        </button>
+      </form>
+      <section
+        class="mt-12 card padded"
+        x-show="$store.portal.user?.role==='CUSTOMER'"
+        x-cloak
+      >
+        <div class="flex flex-wrap items-center justify-between gap-5">
+          <div>
+            <span class="eyebrow">GOOD TO SEE YOU AGAIN</span>
+            <h2 class="text-3xl mt-2">
+              Hello,
+              <span x-text="$store.portal.user?.name.split(' ')[0]"></span>.
+            </h2>
+            <p class="muted text-sm mt-2">
+              Your pets’ next little adventure starts here.
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <a href="/pages/pets.html" class="btn btn-outline"
+              >My pets
+              <span x-text="$store.portal.pets.length" class="badge"></span></a
+            ><a href="/pages/bookings.html" class="btn btn-soft"
+              >View my bookings →</a
+            >
+          </div>
+        </div>
+      </section>
+      <section
+        class="mt-16"
+        x-data="{bookingMode:false,featured:['classic','garden','cat'].map(id=>typeFor(id))}"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow mb-3">ROOM TO FEEL RIGHT AT HOME</p>
+            <h2>Small comforts. Big tail wags.</h2>
+          </div>
+          <a href="/pages/rooms.html" class="text-link shrink-0 mt-2"
+            >All rooms <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <div class="grid md:grid-cols-3 gap-5">
+          <template x-for="room in featured" :key="room.id"
+            ><!-- include:roomcard --></template
+          >
+        </div>
+      </section>
+      <section
+        id="how-it-works"
+        class="mt-16 grid md:grid-cols-[.8fr_1.2fr] gap-10 rounded-[26px] bg-sage px-7 py-10 md:p-12"
+      >
+        <div>
+          <p class="eyebrow mb-4">LESS PLANNING. MORE PEACE OF MIND.</p>
+          <h2 class="text-4xl">A happy stay,<br />in three little steps.</h2>
+          <a href="/pages/rooms.html" class="text-link mt-6"
+            >Let’s plan a stay →</a
+          >
+        </div>
+        <div class="grid sm:grid-cols-3 gap-7">
+          <div>
+            <span class="text-clay text-xs font-semibold">01 /</span>
+            <h3 class="mt-4 mb-2 text-sm">Meet your pet</h3>
+            <p class="text-xs muted leading-6">
+              Add their profile and the little things that make them, them.
+            </p>
+          </div>
+          <div>
+            <span class="text-clay text-xs font-semibold">02 /</span>
+            <h3 class="mt-4 mb-2 text-sm">Find their room</h3>
+            <p class="text-xs muted leading-6">
+              Choose a cozy space and dates that work for your family.
+            </p>
+          </div>
+          <div>
+            <span class="text-clay text-xs font-semibold">03 /</span>
+            <h3 class="mt-4 mb-2 text-sm">Make it official</h3>
+            <p class="text-xs muted leading-6">
+              Complete demo checkout and keep everything in your portal.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section
+        class="mt-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5"
+      >
+        <div>
+          <p class="eyebrow mb-3">THE LITTLE DETAILS MATTER</p>
+          <h2 class="text-3xl">
+            Their routines. Their quirks. Their home comforts.
+          </h2>
+          <p class="muted text-sm mt-3">
+            Keep feeding notes and care preferences together in their pet
+            profile.
+          </p>
+        </div>
+        <a href="/pages/pets.html" class="btn btn-outline shrink-0"
+          >Meet my pets <span aria-hidden="true">↗</span></a
+        >
+      </section>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

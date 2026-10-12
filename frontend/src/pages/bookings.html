@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Little getaways — PawInn</title>
+    <link rel="icon" href="/assets/icons/paw.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="bookings">
+    <!-- include:header -->
+    <main id="main" class="wrap" x-data="bookings">
+      <div class="page-intro flex flex-wrap items-center justify-between gap-5">
+        <div>
+          <p class="eyebrow">EVERY STAY HAS A LITTLE STORY</p>
+          <h1>Their little getaways.</h1>
+          <p class="muted text-sm">
+            Upcoming adventures, happy memories, and all the details in between.
+          </p>
+        </div>
+        <a href="/pages/rooms.html" class="btn btn-primary"
+          >Plan a new stay <span aria-hidden="true">↗</span></a
+        >
+      </div>
+      <!-- include:customer-gate -->
+      <section x-show="$store.portal.user?.role==='CUSTOMER'" x-cloak>
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-7">
+          <div class="tabs" aria-label="Filter bookings">
+            <template
+              x-for="choice in [{id:'upcoming',name:'Upcoming'},{id:'history',name:'Past stays'},{id:'requests',name:'Cancellation requests'},{id:'all',name:'All stays'}]"
+              :key="choice.id"
+              ><button
+                @click="tab=choice.id"
+                :class="{'selected':tab===choice.id}"
+                :aria-pressed="tab===choice.id"
+                x-text="choice.name"
+              ></button
+            ></template>
+          </div>
+          <div>
+            <label for="booking-search" class="sr-only"
+              >Search bookings by pet or reference</label
+            ><input
+              id="booking-search"
+              type="search"
+              x-model="query"
+              placeholder="Pet name or booking ID"
+              class="!w-56 text-xs !py-2"
+            />
+          </div>
+        </div>
+        <div class="space-y-5">
+          <template x-for="booking in items" :key="booking.id"
+            ><article class="card flex flex-col md:flex-row">
+              <img
+                :src="'/assets/images/'+typeFor(booking.typeId).image"
+                :alt="'Illustration of '+typeFor(booking.typeId).name"
+                class="w-full md:w-52 h-44 md:h-auto object-cover"
+                width="220"
+                height="200"
+              />
+              <div class="padded flex-1">
+                <div class="flex flex-wrap justify-between items-start gap-3">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <span class="eyebrow" x-text="booking.id"></span
+                      ><span
+                        :class="badge(booking.status)"
+                        x-text="booking.status"
+                      ></span>
+                    </div>
+                    <h2 class="text-3xl mt-3">
+                      <span x-text="booking.petName"></span>’s little getaway
+                    </h2>
+                    <p
+                      class="text-xs muted mt-2"
+                      x-text="typeFor(booking.typeId).name+' · '+booking.roomId"
+                    ></p>
+                  </div>
+                  <div class="text-right">
+                    <p
+                      class="text-lg font-semibold"
+                      x-text="money(booking.total)"
+                    ></p>
+                    <p
+                      class="text-[10px] muted"
+                      x-text="nights(booking.start,booking.end)+' nights'"
+                    ></p>
+                  </div>
+                </div>
+                <div
+                  class="flex flex-wrap items-center justify-between gap-4 mt-5 pt-4 border-t border-stone-100"
+                >
+                  <p class="text-xs">
+                    <span x-text="dateLabel(booking.start)"></span
+                    ><span class="mx-2 muted">→</span
+                    ><span x-text="dateLabel(booking.end)"></span>
+                  </p>
+                  <div class="flex gap-3 items-center">
+                    <a
+                      x-show="booking.status==='PENDING'"
+                      :href="'/pages/checkout.html?booking='+booking.id"
+                      class="btn btn-primary btn-sm"
+                      >Complete checkout</a
+                    ><button
+                      class="btn btn-outline btn-sm"
+                      @click="detail=booking"
+                    >
+                      View details ↗
+                    </button>
+                  </div>
+                </div>
+                <p
+                  x-show="booking.cancellation?.status==='PENDING'"
+                  class="notice mt-4"
+                >
+                  Cancellation requested. Your booking remains confirmed until
+                  staff approves it.
+                </p>
+                <p
+                  x-show="booking.cancellation?.status==='DECLINED'"
+                  class="text-xs muted mt-3"
+                >
+                  Cancellation declined:
+                  <span x-text="booking.cancellation?.note"></span>
+                </p>
+              </div></article
+          ></template>
+        </div>
+        <div class="empty" x-show="!items.length">
+          <img src="/assets/images/cat.svg" alt="" class="w-20 h-20 mx-auto" />
+          <h3>No little getaways here yet.</h3>
+          <p>
+            Try another filter, or give your pet a new adventure to look forward
+            to.
+          </p>
+          <a href="/pages/rooms.html" class="btn btn-primary"
+            >Explore rooms →</a
+          >
+        </div>
+      </section>
+      <div
+        class="modal-overlay"
+        x-show="detail"
+        x-cloak
+        @click.self="detail=null"
+        @keydown.escape.window="detail=null"
+        x-trap.inert.noscroll="detail"
+      >
+        <section
+          class="modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="booking-title"
+        >
+          <div class="modal-title">
+            <div>
+              <p class="eyebrow mb-2" x-text="detail?.id"></p>
+              <h2 id="booking-title">The little details.</h2>
+            </div>
+            <button
+              class="icon-btn shrink-0"
+              @click="detail=null"
+              aria-label="Close booking details"
+            >
+              ✕
+            </button>
+          </div>
+          <template x-if="detail"
+            ><div>
+              <div class="flex flex-wrap gap-2 mb-5">
+                <span
+                  :class="badge(detail.status)"
+                  x-text="detail.status"
+                ></span
+                ><span
+                  :class="badge(detail.paymentStatus)"
+                  x-text="'Payment: '+detail.paymentStatus"
+                ></span
+                ><span
+                  x-show="detail.refundStatus"
+                  class="badge badge-success"
+                  x-text="'Refund: '+detail.refundStatus"
+                ></span>
+              </div>
+              <div class="summary-line">
+                <span class="muted">Guest</span
+                ><strong x-text="detail.petName"></strong>
+              </div>
+              <div class="summary-line">
+                <span class="muted">Room</span
+                ><span x-text="typeFor(detail.typeId).name"></span>
+              </div>
+              <div class="summary-line">
+                <span class="muted">Check-in</span
+                ><span x-text="dateLabel(detail.start)"></span>
+              </div>
+              <div class="summary-line">
+                <span class="muted">Check-out</span
+                ><span x-text="dateLabel(detail.end)"></span>
+              </div>
+              <div class="summary-line border-t border-stone-200 mt-2">
+                <span>Total</span><strong x-text="money(detail.total)"></strong>
+              </div>
+              <div x-show="detail.cancellation" class="notice my-5">
+                <p class="font-semibold mb-1">
+                  Cancellation request ·
+                  <span x-text="detail.cancellation?.status"></span>
+                </p>
+                <p x-text="detail.cancellation?.reason"></p>
+                <p
+                  class="mt-2"
+                  x-show="detail.cancellation?.note"
+                  x-text="detail.cancellation?.note"
+                ></p>
+                <p
+                  x-show="detail.refundAmount"
+                  class="mt-2"
+                  x-text="'Demo refund: '+money(detail.refundAmount||0)"
+                ></p>
+              </div>
+              <h3 class="text-sm mt-6 mb-4">Their stay, step by step</h3>
+              <div class="timeline">
+                <template x-for="(log,index) in detail.logs" :key="index"
+                  ><div class="timeline-item">
+                    <p x-text="log.text"></p>
+                    <p
+                      class="text-[10px] muted mt-1"
+                      x-text="new Date(log.at).toLocaleString()"
+                    ></p></div
+                ></template>
+              </div>
+              <button
+                x-show="canCancel(detail)"
+                class="text-link mt-4"
+                @click="openCancel(detail)"
+              >
+                Request cancellation →</button
+              ><a
+                x-show="detail.status==='PENDING'"
+                :href="'/pages/checkout.html?booking='+detail.id"
+                class="btn btn-primary mt-4"
+                >Complete checkout →</a
+              >
+            </div></template
+          >
+        </section>
+      </div>
+      <div
+        class="modal-overlay"
+        x-show="cancelTarget"
+        x-cloak
+        @click.self="cancelTarget=null"
+        @keydown.escape.window="cancelTarget=null"
+        x-trap.inert.noscroll="cancelTarget"
+      >
+        <section
+          class="modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-title"
+        >
+          <div class="modal-title">
+            <h2 id="cancel-title">Plans can change.</h2>
+            <button
+              class="icon-btn shrink-0"
+              @click="cancelTarget=null"
+              aria-label="Close cancellation request"
+            >
+              ✕
+            </button>
+          </div>
+          <p class="muted text-sm mb-5">
+            Send a cancellation request for
+            <strong x-text="cancelTarget?.id"></strong>. Your stay remains
+            confirmed while staff reviews it. Approved requests receive a full
+            simulated refund in this demo.
+          </p>
+          <form @submit.prevent="submitCancel()" class="space-y-4">
+            <label
+              >Tell us a little more<textarea
+                x-model="reason"
+                rows="4"
+                minlength="10"
+                maxlength="1000"
+                required
+                placeholder="What changed? Please enter at least 10 characters."
+              ></textarea>
+            </label>
+            <p class="error" x-show="error" x-text="error" role="alert"></p>
+            <div class="flex justify-end gap-3">
+              <button
+                type="button"
+                class="btn btn-outline"
+                @click="cancelTarget=null"
+              >
+                Keep my stay</button
+              ><button class="btn btn-primary">Send request →</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

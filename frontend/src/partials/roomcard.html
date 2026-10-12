@@ -1,0 +1,58 @@
+<article class="card room-card flex flex-col">
+  <div class="relative">
+    <img
+      :src="'/assets/images/'+room.image"
+      :alt="'Illustration of '+room.name"
+      loading="lazy"
+      width="600"
+      height="375"
+    /><span
+      class="badge absolute top-4 left-4 bg-white/90"
+      x-text="room.species==='Cat'?'For our feline friends':'For our canine friends'"
+    ></span>
+  </div>
+  <div class="room-body flex flex-col flex-1">
+    <p class="eyebrow mb-3" x-text="room.tag"></p>
+    <h3 x-text="room.name"></h3>
+    <p class="text-xs muted mt-2" x-text="room.subtitle"></p>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <template x-for="feature in room.features" :key="feature">
+        <span
+          class="text-[10px] bg-paper rounded-full px-2.5 py-1 muted"
+          x-text="feature"
+        ></span>
+      </template>
+    </div>
+    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[11px] muted mt-5">
+      <span x-text="room.size"></span><span aria-hidden="true">·</span
+      ><span>1 pet per room</span><span aria-hidden="true">·</span
+      ><span>Air conditioned</span>
+    </div>
+    <div
+      class="border-t border-stone-100 mt-5 pt-4 flex items-center justify-between gap-3"
+    >
+      <div>
+        <span class="text-lg font-semibold" x-text="money(room.rate)"></span
+        ><span class="text-[11px] muted"> / night</span>
+      </div>
+      <a
+        x-show="!bookingMode"
+        :href="'/pages/rooms.html?species='+room.species"
+        class="text-link"
+        >Take a look <span aria-hidden="true">↗</span></a
+      ><button
+        x-show="bookingMode"
+        class="btn btn-outline btn-sm"
+        @click="choose(room)"
+        :disabled="!room.available"
+        x-text="room.available?'Choose room':'Fully booked'"
+      ></button>
+    </div>
+    <p
+      x-show="bookingMode"
+      class="text-[10px] mt-3"
+      :class="room.available?'text-green-800':'text-red-700'"
+      x-text="room.available?room.available+' rooms available for these dates':'Try different dates for this room'"
+    ></p>
+  </div>
+</article>

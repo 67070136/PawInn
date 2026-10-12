@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Join the family — PawInn</title>
+    <link rel="icon" href="/assets/icons/paw.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="register">
+    <!-- include:header -->
+    <main id="main" class="auth-grid">
+      <aside class="auth-art bg-[#eee3d2]">
+        <span class="eyebrow mb-5">THERE’S ROOM FOR YOUR LITTLE FAMILY.</span>
+        <h2>A new adventure.<br />A familiar comfort.</h2>
+        <img
+          src="/assets/images/happy-place.svg"
+          alt="A welcoming illustrated room for dogs and cats"
+          width="380"
+          height="336"
+        />
+        <p class="text-xs muted text-center mt-5 max-w-xs">
+          Their profiles, their stays, and all the little details in one place.
+        </p>
+      </aside>
+      <section class="auth-form" x-data="register">
+        <span class="eyebrow">LET’S GET TO KNOW EACH OTHER</span>
+        <h1>Join the family.</h1>
+        <p class="muted text-sm mb-6">
+          Create a demo account to start planning.
+        </p>
+        <form @submit.prevent="submit()" class="space-y-4">
+          <label
+            >Your name<input
+              x-model="name"
+              autocomplete="name"
+              placeholder="What should we call you?"
+              minlength="2"
+              maxlength="80"
+              required /></label
+          ><label
+            >Email address<input
+              type="email"
+              x-model="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+              maxlength="254"
+          /></label>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label
+              >Demo password<input
+                type="password"
+                x-model="password"
+                autocomplete="off"
+                placeholder="8+ characters"
+                minlength="8"
+                required /></label
+            ><label
+              >Confirm password<input
+                type="password"
+                x-model="confirm"
+                autocomplete="off"
+                placeholder="One more time"
+                minlength="8"
+                required
+            /></label>
+          </div>
+          <p class="text-[11px] muted">
+            Use invented details and a made-up password. Passwords are not saved
+            or verified in this frontend demo.
+          </p>
+          <label class="flex items-start gap-3 font-normal"
+            ><input
+              type="checkbox"
+              x-model="accepted"
+              required
+              class="mt-0.5 shrink-0"
+            /><span class="text-xs muted"
+              >I understand this is a local demo account, not a secure or real
+              hotel account.</span
+            ></label
+          >
+          <p
+            x-show="error"
+            x-cloak
+            class="error"
+            role="alert"
+            x-text="error"
+          ></p>
+          <button
+            class="btn btn-primary w-full"
+            :disabled="busy"
+            x-text="busy?'Creating your space…':'Create demo account →'"
+          ></button>
+        </form>
+        <p class="text-xs muted mt-5 text-center">
+          Already part of the family?
+          <a href="/pages/login.html" class="text-link">Sign in</a>
+        </p>
+      </section>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

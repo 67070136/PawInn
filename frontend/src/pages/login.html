@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Welcome back — PawInn</title>
+    <link rel="icon" href="/assets/icons/paw.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+  <body x-data="shell" data-page="login">
+    <!-- include:header -->
+    <main id="main" class="auth-grid">
+      <aside class="auth-art">
+        <span class="eyebrow mb-5">A FAMILIAR FACE. A HAPPY PLACE.</span>
+        <h2>Good things come<br />with little paws.</h2>
+        <img
+          src="/assets/images/happy-place.svg"
+          alt="A dog and cat relaxing in a sunny pet suite"
+          width="380"
+          height="336"
+        />
+        <p class="text-xs muted text-center mt-5 max-w-xs">
+          From their favorite room to their next adventure, it’s all right here.
+        </p>
+      </aside>
+      <section class="auth-form" x-data="login">
+        <span class="eyebrow">YOUR PAWINN PORTAL</span>
+        <h1>Welcome back.</h1>
+        <p class="muted text-sm mb-7">
+          A happy stay is just around the corner.
+        </p>
+        <form @submit.prevent="submit()" class="space-y-4">
+          <label
+            >Email address<input
+              type="email"
+              autocomplete="email"
+              x-model="email"
+              placeholder="you@example.com"
+              required
+              maxlength="254" /></label
+          ><label
+            >Demo password
+            <div class="relative mt-2">
+              <input
+                :type="showPassword?'text':'password'"
+                x-model="password"
+                minlength="8"
+                required
+                autocomplete="off"
+                placeholder="Any made-up password (8+ characters)"
+                class="pr-16"
+              /><button
+                type="button"
+                class="absolute right-3 top-3 text-xs muted"
+                @click="showPassword=!showPassword"
+                :aria-label="showPassword?'Hide password':'Show password'"
+                x-text="showPassword?'Hide':'Show'"
+              ></button></div
+          ></label>
+          <p class="text-[11px] muted">
+            Demo only: passwords are neither checked nor stored. Don’t use real
+            credentials.
+          </p>
+          <p
+            x-show="error"
+            x-cloak
+            x-text="error"
+            class="error"
+            role="alert"
+          ></p>
+          <button
+            class="btn btn-primary w-full"
+            :disabled="busy"
+            x-text="busy?'Signing you in…':'Sign in →'"
+          ></button>
+        </form>
+        <p class="text-xs muted mt-5 text-center">
+          New around here?
+          <a href="/pages/register.html" class="text-link">Create an account</a>
+        </p>
+        <div class="border-t border-stone-200 pt-6 mt-7">
+          <p class="eyebrow mb-3">JUST EXPLORING? MAKE YOURSELF AT HOME.</p>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              class="btn btn-outline text-xs"
+              :disabled="busy"
+              @click="signIn('jamie@pawinn.demo')"
+            >
+              Customer demo ↗</button
+            ><button
+              type="button"
+              class="btn btn-outline text-xs"
+              :disabled="busy"
+              @click="signIn('team@pawinn.demo')"
+            >
+              Staff demo ↗
+            </button>
+          </div>
+          <p class="text-[10px] muted mt-3">
+            Sample accounts and data live only in this browser.
+          </p>
+        </div>
+      </section>
+    </main>
+    <!-- include:footer -->
+  </body>
+</html>

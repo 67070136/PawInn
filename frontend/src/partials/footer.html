@@ -1,0 +1,39 @@
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-row">
+      <div>
+        <a class="brand text-2xl" href="/"
+          >PawInn<span class="text-clay">.</span></a
+        >
+        <p class="text-xs muted mt-2">
+          A happy stay. A happy pet. A little peace of mind.
+        </p>
+      </div>
+      <div class="flex gap-6 text-xs muted">
+        <a href="/pages/rooms.html">Find their room</a
+        ><a href="/pages/bookings.html">Your bookings</a
+        ><a href="/pages/login.html?next=%2Fpages%2Fstaff-dashboard.html"
+          >Staff access</a
+        >
+      </div>
+    </div>
+    <div
+      class="flex flex-wrap justify-between gap-3 border-t border-stone-200 mt-7 pt-5 text-[10px] muted"
+    >
+      <p>
+        © <span x-text="new Date().getFullYear()"></span> PawInn · A student
+        project made with care.
+      </p>
+      <p>Illustrated rooms, prices and care features are sample content.</p>
+    </div>
+  </div>
+</footer>
+<div
+  class="toast"
+  role="status"
+  aria-live="polite"
+  x-show="$store.ui.message"
+  x-cloak
+  x-transition
+  x-text="$store.ui.message"
+></div>
