@@ -8,7 +8,7 @@ Own room types, current prices, room inventory and staff-only activation changes
 
 1. Read [the team plan](../../docs/team.md) and [API agreement](../../docs/api.md).
 2. Install Express and pg in this folder; add authentication/test dependencies only as needed. Let npm generate `package-lock.json` and commit it with your implementation.
-3. Start PostgreSQL using [the database guide](../../database/README.md). Implement `db.js`, [your schema](../../database/room/schema.sql) and [sample data](../../database/room/seed.sql).
+3. Start PostgreSQL using [the database guide](../../database/README.md). Use the provided [schema](../../database/room/schema.sql) and [sample data](../../database/room/seed.sql), then implement `db.js`. All schemas and seeds are already available through the root initialization script.
 4. Implement `routes.js` and `server.js`, including `GET /health`, input checks and backend access checks.
 5. Add working `start` and `test` scripts to `package.json`; document the commands here.
 6. Add meaningful tests in `tests/` and implement your Dockerfile.

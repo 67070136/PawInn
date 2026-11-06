@@ -1,6 +1,6 @@
 # PawInn: work plan for four people
 
-Keep this college project small: one frontend, three Express services, one PostgreSQL container with one shared `pawinn` database, and one application Compose file. PostgreSQL startup/database creation works; backend, table/seed SQL and pipeline files are starter guides.
+Keep this college project small: one frontend, three Express services, one PostgreSQL container with one shared `pawinn` database, and one application Compose file. PostgreSQL startup, all seven tables and mock data are implemented. Backend and pipeline files are starter guides.
 
 ## Ownership
 
@@ -28,11 +28,11 @@ Room has fewer business rules, so its owner also handles Docker and CI/CD. Booki
 ### 1. Independent setup
 
 - Member 1: run the existing frontend; identify the adapters in `src/js/api/` and direct demo reads in `src/js/stores/session.js` and page modules.
-- Member 2: create users/pets tables and seeds; implement health, registration/login and pet ownership checks.
-- Member 3: create room types/rooms tables and seeds; implement health and room browsing. Prepare Docker and the pipeline after service start/test commands are agreed.
-- Member 4: create bookings/cancellation/log tables and seeds; implement date validation and availability using agreed users/pets/room tables or temporary test fixtures. Read/join shared data as needed instead of waiting for other services' APIs.
+- Member 2: run the provided users/pets schema and seeds; implement health, registration/login with bcrypt comparison, and pet ownership checks.
+- Member 3: use the provided room types/rooms schema and seeds (five rooms per type); implement health and room browsing. Prepare Docker and the pipeline after service start/test commands are agreed.
+- Member 4: use the provided bookings/cancellation/log schema and seeds; implement date validation and availability using the shared users/pets/room tables or temporary test fixtures. Read/join shared data as needed instead of waiting for other services' APIs.
 
-Account and room work can proceed while booking uses small temporary test fixtures. Their schemas must be available before booking's real foreign keys are created. Agree schema columns early; the other services' APIs do not need to be finished to develop booking.
+Account and room work can proceed while booking uses small temporary test fixtures. The provided initialization script loads all schemas/seeds in dependency order. Coordinate schema changes; the other services' APIs do not need to be finished to develop booking.
 
 ### 2. First working journey
 
@@ -73,4 +73,4 @@ Only Member 3 edits shared deployment files by default. Discuss changes to `docs
 
 ## Restructure record
 
-The simplification preserves the frontend and flat backend folders. Database SQL is centralized under `database/` by service owner. One Compose PostgreSQL instance creates one shared application database, `pawinn`. SQL folders organize table ownership and foreign keys connect the seven planned tables. Backend application logic, table definitions, room inventory and CI/CD are still implementation tasks; the agreed room seed target is five rooms per type (15 total).
+The simplification preserves the frontend and flat backend folders. Database SQL is centralized under `database/` by service owner. One Compose PostgreSQL instance creates one shared application database, `pawinn`. SQL folders organize table ownership and foreign keys connect the seven tables. Schema, five-room-per-type inventory and all-services mock data are implemented; backend logic and CI/CD remain team tasks. See the database guide for setup and verification.

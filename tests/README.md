@@ -6,7 +6,7 @@ These are manual acceptance checks until the real services exist. Add automated 
 
 - Register/sign in; incorrect passwords fail; the public user response contains no password/hash.
 - Customer A cannot read, edit, delete, reserve for or pay for Customer B's data, even though the services share a database.
-- Once schemas exist, verify real FKs reject invalid user/pet/room/booking references and referenced-record deletion preserves booking history.
+- Run the provided database checks: `docker compose exec -T postgres psql -U pawinn -d pawinn -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/tests/verify.sql`. They verify schema, fixtures, PK/FK ownership, overlap rules and preserved history.
 - Add/edit a pet; reject deleting a pet referenced by a booking, and prevent incompatible species changes while it has active bookings.
 - Browse active rooms and check valid/invalid dates.
 - Reserve a compatible room; reject unavailable rooms and simultaneous overlapping reservations.

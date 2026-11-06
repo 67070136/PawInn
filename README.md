@@ -4,7 +4,7 @@ PawInn is a customer-facing pet hotel portal web app.
 
 ## Project status
 
-The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. Compose can start one PostgreSQL instance containing one shared application database, `pawinn`. Backend services, table/seed SQL and deployment pipelines remain TODO scaffolds. The full application is not integrated yet.
+The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. Compose can start one PostgreSQL instance containing one shared application database, `pawinn`. The seven-table schema and mock-data SQL are implemented. Backend services and deployment pipelines remain TODO scaffolds. The full application is not integrated yet.
 
 ## Team of four: start here
 
@@ -46,11 +46,13 @@ From the root in PowerShell, copy the template only if you do not already have `
 
 ```powershell
 Copy-Item .env.example .env
-docker compose up -d postgres
+docker compose up -d --wait postgres
 docker compose ps
 ```
 
-All three Express services connect to the same `pawinn` database using `POSTGRES_DB` from `.env`. Its seven planned tables can use normal foreign keys and SQL joins. SQL files are still starter notes, so no application tables are created yet. Each teammate runs this setup locally. See [database setup and connections](database/README.md) for ports, credentials, SQL ownership and applying later changes.
+All three Express services connect to the same `pawinn` database using `POSTGRES_DB` from `.env`. Its seven tables have normal foreign keys and SQL joins. A fresh database automatically loads the schema and mock data for all services (3 users, 4 pets, 15 rooms and 6 bookings). Existing placeholder databases need the explicit init command in the database guide. Each teammate runs this setup locally. See [database setup and connections](database/README.md) for ports, credentials, SQL ownership and applying later changes.
+
+Mock data for all services can be loaded through `database/seed.psql`; see the [step-by-step setup, demo accounts and verification commands](database/README.md).
 
 ## Product direction
 

@@ -1,32 +1,93 @@
-# One shared PostgreSQL database
+# PawInn database setup and mock data
 
-PawInn uses one PostgreSQL container and one application database, `pawinn`. All seven planned tables live together in its default `public` schema. Account, Room and Booking remain separate Express services, all connecting to this same database.
+One PostgreSQL container hosts one application database, `pawinn`, shared by Account, Room and Booking. All seven tables are in the default `public` schema.
 
-| SQL folder | Owner | Tables to implement |
-| --- | --- | --- |
-| `account/` | Member 2 | users, pets |
-| `room/` | Member 3 | room_types, rooms |
-| `booking/` | Member 4 | bookings, cancellation_requests, booking_logs |
+## 1. Prepare Docker and environment settings
 
-These folders organize teammates' work; they are not separate databases or PostgreSQL schemas. Each contains `schema.sql` and `seed.sql`. Service owners edit those files alongside their JavaScript in `services/`.
+Start Docker Desktop and open PowerShell in the repository root. Save your own work before pulling the latest repository changes.
 
-## Start the database
-
-From the repository root in PowerShell, copy the template only if you do not already have `.env`, then set your local password:
+Copy the template only if a local `.env` does not already exist:
 
 ```powershell
-Copy-Item .env.example .env
-docker compose up -d postgres
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+Open `.env` in your editor and set:
+
+```dotenv
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
+POSTGRES_USER=pawinn
+POSTGRES_PASSWORD=choose-your-local-database-password
+POSTGRES_DB=pawinn
+```
+
+Keep real settings in ignored `.env`, not in Git. If port 5432 is occupied, choose another `POSTGRES_PORT`. All commands below assume username/database `pawinn`; substitute your configured values if different.
+
+## 2. Start PostgreSQL and load all services' data
+
+```powershell
+docker compose up -d --wait postgres
 docker compose ps
 ```
 
-Keep existing local settings. For an existing `.env`, add `POSTGRES_DB=pawinn` and remove obsolete per-service database names.
+A fresh data directory is initialized automatically: PostgreSQL creates `pawinn`, and `database/init.sql` creates all seven tables and loads the demo data. You do not need PostgreSQL installed directly on Windows.
 
-PostgreSQL is published on `127.0.0.1:5432` by default. Change `POSTGRES_PORT` if that port is occupied. Data persists in the named `postgres_data` volume.
+If you started this project's database when the SQL files were still placeholders, initialization will not run again on restart. With the existing shared database present, load the scripts explicitly:
 
-On a fresh data directory, the official PostgreSQL image creates the database named by `POSTGRES_DB`. `init.sql` loads account, room and booking table definitions in that order, then their seeds in the same order. This lets foreign keys reference parent tables and seed rows that already exist. All six schema/seed files are still TODO starters: startup creates the shared database, not the application's tables.
+```powershell
+docker compose exec -T postgres psql -U pawinn -d pawinn -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/init.sql
+```
 
-## Connect every service or a database GUI
+These initial schemas use `CREATE TABLE IF NOT EXISTS`; they do not upgrade an older, incompatible table definition. Review any existing tables before applying changes. This script does not drop tables or clear data.
+
+If you used the much older separate-database setup and `pawinn` does not exist yet, back up any data, create it once, then run the initialization command above:
+
+```powershell
+docker compose exec -T postgres psql -U pawinn -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE pawinn;"
+```
+
+Only run CREATE DATABASE when it is missing. Existing databases are not merged or deleted automatically.
+
+## 3. Verify the tables and seed data
+
+```powershell
+docker compose exec -T postgres psql -U pawinn -d pawinn -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/tests/verify.sql
+```
+
+The verification script checks tables, fixtures, password hashes, PK/FK relationships, prices, refunds, room/pet overlap protection and adjacent stays. Its probe rows roll back. Use it against a seeded demo/test database, not an unrelated database.
+
+Expected initial data:
+
+| Table | Rows | Examples |
+| --- | ---: | --- |
+| users | 3 | Two customers and one staff user |
+| pets | 4 | Mochi, Miso, Buddy, Luna |
+| room_types | 3 | Cozy Den 650, Garden Suite 950, Cat Loft 750 THB/night |
+| rooms | 15 | Five physical rooms per type |
+| bookings | 6 | Pending, confirmed, cancelled and completed |
+| cancellation_requests | 3 | Pending, approved and declined |
+| booking_logs | 18 | Creation, payment, cancellation, refund and completion |
+
+Room numbers: C101-C105, G101-G105 and L101-L105.
+
+Demo application accounts all use password **PawInnDemo123!**:
+
+| Email | Role |
+| --- | --- |
+| jamie@pawinn.demo | CUSTOMER |
+| alex@pawinn.demo | CUSTOMER |
+| team@pawinn.demo | STAFF |
+
+This is an invented public demo password, not your `POSTGRES_PASSWORD`. Seed passwords are stored as bcrypt hashes generated by PostgreSQL's pgcrypto extension. Backend login still needs implementation; the standalone frontend does not read these database accounts yet.
+
+The booking fixtures include an unpaid hold, a failed payment eligible for retry, a paid reservation awaiting cancellation review, a completed stay, an approved cancellation/full mock refund, and a declined request that leaves its booking confirmed.
+
+Dates are relative to the database's current date on first insertion. A pending booking's hold is based on `created_at + 15 minutes`; the future booking service must expire unpaid holds to CANCELLED. PostgreSQL does not run that job automatically.
+
+## 4. Connect all three services
+
+All services use the SAME settings:
 
 | Setting | Node running on your computer | Future Node container in Compose |
 | --- | --- | --- |
@@ -35,56 +96,66 @@ On a fresh data directory, the official PostgreSQL image creates the database na
 | User/password | POSTGRES_USER / POSTGRES_PASSWORD | Same values |
 | Database | POSTGRES_DB, default pawinn | Same database |
 
-All three `services/<name>/db.js` files will create a pg pool using the same settings, including `POSTGRES_DB`. Node does not automatically read the root `.env`; service owners must load it or pass its settings at startup. Compose uses root `.env` for its own configuration.
+In each `services/<name>/db.js`, the owner will create a pg pool using those settings. Node must load the root `.env` or receive its values at startup; Compose reading `.env` does not automatically configure a separately launched Node process. The three API applications are still scaffolds.
 
-One local-demo login can access all tables. Ownership is a team agreement, not database permission isolation. Each service normally writes its own tables. Shared reads and joins are allowed where useful, such as Booking checking pets, rooms and prices. Authentication, roles and ownership must still be checked by every protected API.
-
-## Primary keys and foreign keys
-
-Every table needs its own primary key. Define real foreign keys between related tables in this database:
-
-- pets.owner_id references users.user_id.
-- rooms.room_type_id references room_types.room_type_id.
-- bookings.user_id, pet_id and room_id reference users, pets and rooms.
-- cancellation_requests.booking_id and booking_logs.booking_id reference bookings.
-- cancellation_requests.reviewed_by and booking_logs.actor_user_id reference users; allow null where the ER diagram requires it.
-
-Agree matching ID types before implementing these constraints. Foreign keys ensure referenced rows exist; they do not check pet ownership, date conflicts, payment rules or staff authorization. Those rules still belong in the services.
-
-Preserve booking history. Avoid cascading deletion of a user, pet or room into its bookings. The simplest approach is to reject deletion of referenced records and deactivate rooms instead; agree any future archive behavior together.
-
-## Working as four people
-
-Each teammate runs their own local copy of the application and this database. One shared database means shared by that environment's services, not one remote database that all teammates must use.
-
-Members 2, 3 and 4 own their SQL folders. Member 3 maintains `init.sql`, Compose and shared settings. Account and room schemas must exist before booking's foreign keys can be created. The booking owner can use agreed test fixtures while those schemas are being implemented. Review changes to referenced columns with affected teammates.
-
-## Existing volumes and SQL changes
-
-Docker initialization runs only for a fresh data directory. Changing `POSTGRES_DB` or restarting does not migrate existing data or apply edited SQL.
-
-If you already ran the older separate-database setup, keep its databases and volume. After taking a backup, create the new `pawinn` database if missing, using a database GUI or, with the sample login:
+A database GUI uses the left column above. To inspect via Docker's bundled psql:
 
 ```powershell
-docker compose exec -T postgres psql -U pawinn -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE pawinn;"
+docker compose exec postgres psql -U pawinn -d pawinn
 ```
 
-Run that only if `pawinn` does not exist. Implement/review the schemas before applying them. Any existing application data needs an explicit reviewed transfer; this repository change does not copy or delete it.
+Useful commands inside psql:
 
-For a reviewed account schema script, using the sample username and shared database:
+```sql
+\dt
+SELECT room_number, name, price_per_night
+FROM rooms JOIN room_types USING (room_type_id)
+ORDER BY room_number;
+\q
+```
+
+## 5. Mock-data SQL scripts for each service
+
+| Owner | Schema | Mock data |
+| --- | --- | --- |
+| Account / Member 2 | [account/schema.sql](account/schema.sql) | [account/seed.sql](account/seed.sql) |
+| Room / Member 3 | [room/schema.sql](room/schema.sql) | [room/seed.sql](room/seed.sql) |
+| Booking / Member 4 | [booking/schema.sql](booking/schema.sql) | [booking/seed.sql](booking/seed.sql) |
+
+[init.sql](init.sql) creates all schemas and loads all fixtures. [seed.psql](seed.psql) loads ONLY mock data for all three services after tables exist. The .psql extension prevents Docker from automatically loading this helper again after init.sql:
 
 ```powershell
-docker compose exec -T postgres psql -U pawinn -d pawinn -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/account/schema.sql
+docker compose exec -T postgres psql -U pawinn -d pawinn -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/seed.psql
 ```
 
-Use your configured username/database if different. Initial schema and seed files are not an automatic migration system. Once tables hold data, apply incremental SQL updates rather than rerunning destructive statements.
+You can run an individual service's seed by changing that path to `account/seed.sql`, `room/seed.sql` or `booking/seed.sql`. Load account and room data before booking data.
 
-`docker compose down` stops the setup and keeps its data volume. Do not remove a volume to apply this change.
+The entry scripts use psql's `\ir` includes, so run them through psql as shown. In a GUI SQL editor, run the three schema files, then three seed files individually in account/room/booking order.
 
-## Room inventory and current scope
+Seeds use reserved example IDs and `ON CONFLICT (primary_key) DO NOTHING`: reruns add missing fixtures without resetting existing rows, dates, statuses or passwords. Unique email/room/payment references still reject incompatible existing data. Seed reruns are not a demo reset. Identity sequences are advanced so new generated IDs do not collide with fixtures.
 
-The agreed seed target is five rooms per type: Cozy Den C101-C105, Garden Suite G101-G105 and Cat Loft L101-L105 (15 rooms). Member 3 implements this in `room/seed.sql`. The standalone frontend still uses its earlier two-per-type demo inventory; Member 1 updates it when integrating or refreshing the demo.
+## 6. What the database enforces
 
-Only PostgreSQL is currently runnable in Compose. Backend implementations, table/seed SQL, proxy integration and CI/CD remain team tasks. The existing frontend runs independently using local demo data.
+- Integer generated primary keys on all seven tables.
+- Real foreign keys between users, pets, rooms, bookings, cancellations and logs.
+- A composite pet/owner foreign key prevents booking another customer's pet.
+- Positive prices, valid date order, nightly totals and consistent payment/refund fields.
+- Non-overlapping active bookings for both room and pet, enforced with daterange exclusion constraints. Check-out is exclusive, allowing an adjacent stay.
+- At most one pending cancellation request per booking.
+- Referenced-record deletion is restricted to preserve booking history.
 
-References: [official PostgreSQL image initialization](https://hub.docker.com/_/postgres), [PostgreSQL foreign keys](https://www.postgresql.org/docs/17/ddl-constraints.html#DDL-CONSTRAINTS-FK) and [Docker Compose interpolation](https://docs.docker.com/reference/compose-file/interpolation/).
+The database uses `btree_gist` for overlap constraints and `pgcrypto` for fixture passwords; both ship with the chosen PostgreSQL image. The initialization user must be able to create extensions, as the Docker-created local user can.
+
+Services still enforce authentication, staff permissions, pet/room species compatibility, room active status, permitted state transitions, hold expiry and payment/refund operations. Translate database constraint failures into useful API responses, including 409 for booking conflicts.
+
+## Team ownership and later changes
+
+SQL folders organize ownership, not separate databases or schemas. Account owns users/pets writes; Room owns room_types/rooms writes; Booking owns bookings/cancellation_requests/booking_logs writes. Shared reads and joins are allowed.
+
+Each teammate runs their own local copy of this setup. Agree schema changes with anyone who references those columns. Initial schema files are not an automatic migration system; use reviewed incremental SQL for later structural changes.
+
+Stop with `docker compose down`; the database volume remains. Do not remove the volume just to load scripts. Actual application data needs a reviewed migration, not reseeding.
+
+The database schema/data is ready; Express APIs, proxy integration and CI/CD still need implementation. The existing frontend uses independent browser-local demo data and currently has its earlier two-per-type inventory until integration.
+
+References: [official PostgreSQL image initialization](https://hub.docker.com/_/postgres), [range constraints](https://www.postgresql.org/docs/17/rangetypes.html#RANGETYPES-CONSTRAINT), and [password hashing](https://www.postgresql.org/docs/17/pgcrypto.html#PGCRYPTO-PASSWORD-HASHING-FUNCS).

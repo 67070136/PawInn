@@ -5,14 +5,14 @@ This is the team's starting contract, not a list of implemented endpoints. Confi
 ## Shared conventions
 
 - JSON request/response bodies; camelCase field names.
-- IDs are opaque strings at the HTTP boundary; agree the database type before writing schemas.
+- Database IDs are generated INTEGER primary keys. Serialize them as opaque strings at the HTTP boundary; validate/convert incoming IDs before parameterized queries.
 - Dates: `YYYY-MM-DD`. Timestamps: ISO 8601. Check-out must be after check-in.
 - Currency: THB. Store database money as exact decimal values or integer satang; never trust a total sent by the browser.
 - Proposed authentication: `Authorization: Bearer <token>`. Account owns token issuance; each service validates it and enforces roles/ownership.
 - Success: `{"data": ...}`. Error: `{"message": "A useful explanation"}`.
 - Use 201 for creation; 200 for normal success; 204 for successful deletion; 400 invalid input; 401 unauthenticated; 403 forbidden; 404 missing; 409 conflicting state.
 - Each service exposes `GET /health`.
-- All three services connect to the shared `pawinn` database. Use matching PK/FK types across the seven tables; API IDs remain strings at the HTTP boundary.
+- All three services connect to the shared `pawinn` database. The SQL already defines matching integer PK/FK types across all seven tables; API IDs remain strings at the HTTP boundary.
 - Services primarily write their own tables. Shared reads/joins are allowed for ownership, availability and prices; internal HTTP lookups are optional rather than required.
 - Keep these shapes independent of frontend demo storage; Member 1 adapts API responses to page state.
 
@@ -69,6 +69,12 @@ Cancellation statuses: PENDING, APPROVED, DECLINED.
 Refund statuses: NOT_REQUESTED, PENDING, SUCCESS, FAILED.
 
 Pending reservations hold inventory for 15 minutes, then expire to CANCELLED if unpaid. Reject overlapping bookings for a room or pet. Failed payment can be retried before expiry. Repeated successful checkout/review must not charge/refund twice. Approved cancellation records a full mock refund for a paid booking and releases the room; declined requests keep it confirmed.
+
+## Database mapping and fixtures
+
+The schema and demo data are implemented under `database/`; run the [database setup guide](../database/README.md). SQL uses snake_case; APIs keep the camelCase shapes above. Map `user_id` to user `id`, `full_name` to `name`, `care_notes` to `notes`, and booking `check_in_date`/`check_out_date`/`total_price` to `start`/`end`/`total`. Obtain a booking's `roomTypeId` by joining rooms. Never return password hashes.
+
+The sample accounts use public demo password `PawInnDemo123!`, stored as bcrypt hashes. The Account owner must implement password comparison. Booking hold expiry is derived from `created_at + 15 minutes`; cancel expired unpaid PENDING rows before they continue blocking availability. SQL does not run the expiry job automatically.
 
 ## First integration example
 

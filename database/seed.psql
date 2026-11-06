@@ -1,0 +1,7 @@
+-- Load mock data for ALL services. Run with psql after the schemas exist.
+-- .psql keeps Docker from automatically running this a second time after init.sql.
+-- Existing fixture IDs are preserved; this adds missing fixtures, not a reset.
+\set ON_ERROR_STOP on
+\ir account/seed.sql
+\ir room/seed.sql
+\ir booking/seed.sql

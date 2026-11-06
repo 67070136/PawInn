@@ -1,6 +1,6 @@
 # room service tests
 
-Owner: Member 3. Add real tests when implementing the service; there are no backend tests yet.
+Owner: Member 3. Add API tests when implementing the service; there are no backend API tests yet. Shared schema/data checks already live in `database/tests/verify.sql`.
 
 Cover room browsing/filtering, valid prices, inactive rooms and staff-only room changes.
 

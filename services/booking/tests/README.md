@@ -1,6 +1,6 @@
 # booking service tests
 
-Owner: Member 4. Add real tests when implementing the service; there are no backend tests yet.
+Owner: Member 4. Add API tests when implementing the service; there are no backend API tests yet. Shared schema/data checks already live in `database/tests/verify.sql`.
 
 Cover invalid/adjacent dates, room/pet conflicts including simultaneous requests, server-calculated prices, hold expiry, checkout retry/idempotency, cancellation ownership and staff review/refund idempotency.
 
