@@ -1,2 +1,3 @@
 -- TODO(Member 4): Initial tables and constraints for bookings, cancellation_requests and booking_logs.
+-- Target database: pawinn_booking in the single shared PostgreSQL instance.
 -- Agree ID types and field names with docs/api.md before implementation.

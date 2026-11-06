@@ -1,0 +1,4 @@
+-- TODO(Member 3): Insert invented demo data for room_types and rooms.
+-- Target database: pawinn_room. Keep IDs consistent with API examples.
+-- Seed 5 rooms per type: Cozy Den C101-C105, Garden Suite G101-G105,
+-- and Cat Loft L101-L105: 3 room types and 15 physical rooms in total.

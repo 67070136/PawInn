@@ -4,7 +4,7 @@ PawInn is a customer-facing pet hotel portal web app.
 
 ## Project status
 
-The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. The three backend services and deployment configuration are TODO scaffolds, with instructions for their owners. The full application cannot run through Compose yet.
+The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. Compose can start one PostgreSQL instance containing three service-owned databases. Backend services, table/seed SQL and deployment pipelines remain TODO scaffolds. The full application is not integrated yet.
 
 ## Team of four: start here
 
@@ -28,16 +28,29 @@ PawInn/
 │   ├── account/             # Member 2
 │   ├── room/                # Member 3
 │   └── booking/             # Member 4
-├── infra/                   # Nginx proxy and PostgreSQL initialization
+├── database/                # One PostgreSQL instance; account/room/booking SQL
+├── infra/                   # Planned Nginx API proxy
 ├── .github/workflows/       # Member 3 adds one CI workflow here
 ├── docs/                    # Team plan, API agreement, architecture and diagrams
 ├── tests/                   # Whole-project integration checklist
-├── compose.yaml             # TODO: local application containers
+├── compose.yaml             # Runnable shared PostgreSQL; API containers come later
 ├── Jenkinsfile              # TODO: local deployment pipeline
 └── .env.example             # Safe sample configuration
 ```
 
-Each backend service starts flat: `server.js`, `routes.js`, `db.js`, `schema.sql`, `seed.sql`, `package.json`, `Dockerfile` and `tests/`. Each has a README explaining its tasks. Add files only when working code needs them; generate lockfiles with npm when dependencies are installed.
+Each backend service starts flat: `server.js`, `routes.js`, `db.js`, `package.json`, `Dockerfile` and `tests/`. Its SQL lives in `database/<service>/schema.sql` and `seed.sql`. Each has a README explaining its tasks. Add files only when working code needs them; generate lockfiles with npm when dependencies are installed.
+
+## Start the shared PostgreSQL instance
+
+From the root in PowerShell, copy the template only if you do not already have `.env`, set your local password, then start PostgreSQL:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d postgres
+docker compose ps
+```
+
+The three databases are `pawinn_account`, `pawinn_room` and `pawinn_booking`, all on the same PostgreSQL instance. SQL is still starter notes, so they initially contain no application tables. Each teammate runs this setup locally. See [database setup and connections](database/README.md) for ports, credentials, SQL ownership and applying later changes.
 
 ## Product direction
 

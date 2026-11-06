@@ -8,7 +8,7 @@ Own registration/login, password hashing, role checks, user profile and pet owne
 
 1. Read [the team plan](../../docs/team.md) and [API agreement](../../docs/api.md).
 2. Install Express and pg in this folder; add authentication/test dependencies only as needed. Let npm generate `package-lock.json` and commit it with your implementation.
-3. Implement `db.js`, `schema.sql` and invented sample data in `seed.sql`.
+3. Start PostgreSQL using [the database guide](../../database/README.md). Implement `db.js`, [your schema](../../database/account/schema.sql) and [sample data](../../database/account/seed.sql).
 4. Implement `routes.js` and `server.js`, including `GET /health`, input checks and backend access checks.
 5. Add working `start` and `test` scripts to `package.json`; document the commands here.
 6. Add meaningful tests in `tests/` and implement your Dockerfile.
@@ -21,11 +21,13 @@ Own registration/login, password hashing, role checks, user profile and pet owne
 | `server.js` | Express setup, environment settings, error handler, health, listen/shutdown |
 | `routes.js` | Routes, short handlers, validation and access checks |
 | `db.js` | PostgreSQL pool and SQL queries for this service only |
-| `schema.sql` | Initial tables/constraints for users and pets |
-| `seed.sql` | Invented demo data |
+| `../../database/account/schema.sql` | Initial tables/constraints for users and pets |
+| `../../database/account/seed.sql` | Invented demo data |
 | `tests/` | Service behavior tests |
 | `Dockerfile` | Build this service's image after it works locally |
 
-Use `PORT` and `DATABASE_URL`; authentication uses the team's agreed token settings. Booking also needs account/room URLs. Copy only the values your service needs from the root environment template. Document a safe schema-update process when tables change; initial SQL is not an automatic migration system.
+Read `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER` and `POSTGRES_PASSWORD` from the root environment settings and select `pawinn_account` in your pg pool. The shared instance is on localhost for Node processes running on your computer; future Compose service containers use host `postgres` and port 5432. The owner must load/pass environment variables at startup; Node does not automatically load root `.env`. Authentication uses the agreed token settings; booking also needs account/room URLs.
+
+Keep all SQL in `database/account/`, not duplicated here. Document safe incremental updates once tables contain data; initial SQL is not an automatic migration system.
 
 Keep this flat. Add another file only when it makes the code easier to follow.

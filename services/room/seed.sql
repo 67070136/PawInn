@@ -1,2 +1,0 @@
--- TODO(Member 3): Insert invented demo data for room_types and rooms.
--- Keep seed IDs consistent with other services' examples; never use real user data.

@@ -1,0 +1,3 @@
+-- TODO(Member 4): Insert invented demo data for bookings, cancellation_requests and booking_logs.
+-- Target database: pawinn_booking. Keep IDs consistent with API examples.
+-- Never use real user data.

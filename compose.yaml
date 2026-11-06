@@ -1,8 +1,22 @@
-# TODO(Member 3): Implement the single local application Compose file.
-# Start frontend, account (3001), room (3002), booking (3003), PostgreSQL and Nginx.
-# PostgreSQL holds pawinn_account, pawinn_room and pawinn_booking.
-# Use infra/init-db.sql for database creation and each service's schema.sql/seed.sql.
-# Mount infra/nginx.conf in the proxy; publish its frontend/API port on localhost.
-# Pass each service only its own DATABASE_URL plus required auth/service settings.
-# Add health checks, a database volume and startup readiness checks.
-# This is a starter note, not a runnable Compose configuration.
+# Database is runnable now. Add frontend/API services as teammates implement them.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pawinn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and set POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:

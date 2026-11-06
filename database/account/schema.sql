@@ -1,2 +1,3 @@
 -- TODO(Member 2): Initial tables and constraints for users and pets.
+-- Target database: pawinn_account in the single shared PostgreSQL instance.
 -- Agree ID types and field names with docs/api.md before implementation.

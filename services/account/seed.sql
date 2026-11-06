@@ -1,2 +1,0 @@
--- TODO(Member 2): Insert invented demo data for users and pets.
--- Keep seed IDs consistent with other services' examples; never use real user data.

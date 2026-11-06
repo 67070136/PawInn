@@ -1,0 +1,3 @@
+-- TODO(Member 2): Insert invented demo data for users and pets.
+-- Target database: pawinn_account. Keep IDs consistent with API examples.
+-- Never use real user data.

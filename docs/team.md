@@ -1,6 +1,6 @@
 # PawInn: work plan for four people
 
-Keep this college project small: one frontend, three Express services, one PostgreSQL container with three databases, and one application Compose file. Backend and pipeline files are starter guides, not working implementations.
+Keep this college project small: one frontend, three Express services, one PostgreSQL container with three databases, and one application Compose file. PostgreSQL startup/database creation works; backend, table/seed SQL and pipeline files are starter guides.
 
 ## Ownership
 
@@ -9,18 +9,19 @@ Replace the member labels with your names. Each person owns their folder, its te
 | Person | Main folder | Deliverables | Shared responsibility |
 | --- | --- | --- | --- |
 | You / Member 1 | `frontend/` | Connect the existing pages to real APIs; loading, error and empty states; customer and staff journeys | Coordinate integration, README, diagrams and demo |
-| Member 2 | `services/account/` | Registration/login, customer/staff identity, user profile, pet CRUD and ownership, users/pets schema and seed data | Agree the authentication format with both backend teammates |
-| Member 3 | `services/room/` | Room types, room inventory, prices, active/inactive rooms, schema, seeds and tests | Own `compose.yaml`, `infra/`, `.github/workflows/`, `Jenkinsfile` and `.env.example` |
-| Member 4 | `services/booking/` | Availability, reservations, price calculation, mock checkout, history, cancellations, staff decisions and booking logs | Lead the final booking/payment/cancellation integration check |
+| Member 2 | `services/account/` + `database/account/` | Registration/login, customer/staff identity, user profile, pet CRUD and ownership, users/pets schema and seed data | Agree the authentication format with both backend teammates |
+| Member 3 | `services/room/` + `database/room/` | Room types, room inventory, prices, active/inactive rooms, schema, seeds and tests | Own `compose.yaml`, `database/init.sql`, `infra/`, `.github/workflows/`, `Jenkinsfile` and `.env.example` |
+| Member 4 | `services/booking/` + `database/booking/` | Availability, reservations, price calculation, mock checkout, history, cancellations, staff decisions and booking logs | Lead the final booking/payment/cancellation integration check |
 
 Room has fewer business rules, so its owner also handles Docker and CI/CD. Booking is the largest feature: Member 1 should help exercise and integrate its flows once account and room integration work.
 
 ## Before coding
 
-1. Read your service README, [architecture](architecture.md) and the [API agreement](api.md).
+1. Read your service README, [database setup](../database/README.md), [architecture](architecture.md) and the [API agreement](api.md).
 2. Agree the endpoint names, JSON field names, IDs, dates and authentication before connecting services.
 3. Keep the existing frontend demo working until real API integration replaces it.
 4. Implement one small feature at a time; add a file only when it has a real job.
+5. Edit schema/seed SQL only in `database/<your-service>/`. Each teammate starts their own local PostgreSQL container; each service selects its own database on that instance.
 
 ## Implementation order
 
@@ -72,4 +73,4 @@ Only Member 3 edits shared deployment files by default. Discuss changes to `docs
 
 ## Restructure record
 
-The agreed simplification preserves the working frontend, replaces the five-layer empty backend scaffold with flat service folders, removes unused empty Compose/publishing/deployment placeholders, and groups team instructions here. Verify the frontend build/tests and scaffold file references before pushing. No backend functionality is implemented by this restructuring.
+The simplification preserves the frontend and flat backend folders. Database SQL is centralized under `database/` by service owner. One Compose PostgreSQL instance creates three databases. Backend application logic, table definitions, room inventory and CI/CD are still implementation tasks; the agreed room seed target is five rooms per type (15 total).

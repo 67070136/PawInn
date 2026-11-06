@@ -17,6 +17,7 @@ These are manual acceptance checks until the real services exist. Add automated 
 - Customer requests cancellation; customer cannot approve their own request.
 - Staff approval cancels the booking, records one full mock refund and releases inventory.
 - Staff decline leaves the booking confirmed; history/timeline shows the decision.
-- Start the complete application through Docker Compose.
+- Start the single PostgreSQL service through Docker Compose; verify pawinn_account, pawinn_room and pawinn_booking exist on that instance.
+- Once backend integration exists, start the complete application through Docker Compose.
 - Show successful GitHub Actions checks and a Jenkins local deployment/health check.
 - Run customer and staff journeys at desktop and mobile sizes.
