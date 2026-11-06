@@ -1,18 +1,18 @@
-# One shared PostgreSQL instance
+# One shared PostgreSQL database
 
-PawInn uses one PostgreSQL container with three databases. This does not mean one shared set of tables.
+PawInn uses one PostgreSQL container and one application database, `pawinn`. All seven planned tables live together in its default `public` schema. Account, Room and Booking remain separate Express services, all connecting to this same database.
 
-| Database | SQL folder | Owner | Tables to implement |
-| --- | --- | --- | --- |
-| `pawinn_account` | `account/` | Member 2 | users, pets |
-| `pawinn_room` | `room/` | Member 3 | room_types, rooms |
-| `pawinn_booking` | `booking/` | Member 4 | bookings, cancellation_requests, booking_logs |
+| SQL folder | Owner | Tables to implement |
+| --- | --- | --- |
+| `account/` | Member 2 | users, pets |
+| `room/` | Member 3 | room_types, rooms |
+| `booking/` | Member 4 | bookings, cancellation_requests, booking_logs |
 
-Each folder contains `schema.sql` and `seed.sql`. The service owner edits those files along with their JavaScript in `services/`. There are no duplicate SQL copies in the service folders.
+These folders organize teammates' work; they are not separate databases or PostgreSQL schemas. Each contains `schema.sql` and `seed.sql`. Service owners edit those files alongside their JavaScript in `services/`.
 
 ## Start the database
 
-From the repository root, using PowerShell:
+From the repository root in PowerShell, copy the template only if you do not already have `.env`, then set your local password:
 
 ```powershell
 Copy-Item .env.example .env
@@ -20,51 +20,71 @@ docker compose up -d postgres
 docker compose ps
 ```
 
-Copy the template only if you do not already have a `.env`; keep existing local settings. Set the local password before starting.
+Keep existing local settings. For an existing `.env`, add `POSTGRES_DB=pawinn` and remove obsolete per-service database names.
 
-The Compose service publishes PostgreSQL on `127.0.0.1:5432` by default. Set `POSTGRES_PORT` in `.env` if that port is already in use. The data is stored in the named `postgres_data` volume.
+PostgreSQL is published on `127.0.0.1:5432` by default. Change `POSTGRES_PORT` if that port is occupied. Data persists in the named `postgres_data` volume.
 
-`init.sql` creates the three databases and loads each folder's schema then seed. Currently, those six files contain TODO notes: the databases start empty, and no tables or real backend functionality are implemented.
+On a fresh data directory, the official PostgreSQL image creates the database named by `POSTGRES_DB`. `init.sql` loads account, room and booking table definitions in that order, then their seeds in the same order. This lets foreign keys reference parent tables and seed rows that already exist. All six schema/seed files are still TODO starters: startup creates the shared database, not the application's tables.
 
-## Connect a service or database GUI
+## Connect every service or a database GUI
 
-| Setting | Node service running on your computer | Future Node container in Compose |
+| Setting | Node running on your computer | Future Node container in Compose |
 | --- | --- | --- |
-| Host | POSTGRES_HOST from .env, default 127.0.0.1 | postgres |
-| Port | POSTGRES_PORT from .env, default 5432 | 5432 |
-| User/password | POSTGRES_USER / POSTGRES_PASSWORD | Same local-demo values |
-| Database | That service's database from the table above | Same service database |
+| Host | POSTGRES_HOST, default 127.0.0.1 | postgres |
+| Port | POSTGRES_PORT, default 5432 | 5432 |
+| User/password | POSTGRES_USER / POSTGRES_PASSWORD | Same values |
+| Database | POSTGRES_DB, default pawinn | Same database |
 
-Each `services/<name>/db.js` will create a pg pool using these settings and its fixed database name. Node does not automatically read the root `.env`; the service owner must load it or pass the variables when implementing startup. Compose reads root `.env` for its own configuration.
+All three `services/<name>/db.js` files will create a pg pool using the same settings, including `POSTGRES_DB`. Node does not automatically read the root `.env`; service owners must load it or pass its settings at startup. Compose uses root `.env` for its own configuration.
 
-The local demo uses one database login for simplicity. Service ownership is an agreement between the team, not database permission isolation. Services must query their own database and use HTTP APIs for other services' data. IDs referring to another service are not cross-database foreign keys.
+One local-demo login can access all tables. Ownership is a team agreement, not database permission isolation. Each service normally writes its own tables. Shared reads and joins are allowed where useful, such as Booking checking pets, rooms and prices. Authentication, roles and ownership must still be checked by every protected API.
 
-## Independent development
+## Primary keys and foreign keys
 
-Each teammate runs their OWN local copy of this PostgreSQL container. One instance means one per local application environment, not a remotely shared server that every teammate must depend on.
+Every table needs its own primary key. Define real foreign keys between related tables in this database:
 
-Members 2, 3 and 4 implement their own SQL folders. Member 3 maintains `init.sql`, `compose.yaml` and shared configuration. Agree ID types and sample references before coding.
+- pets.owner_id references users.user_id.
+- rooms.room_type_id references room_types.room_type_id.
+- bookings.user_id, pet_id and room_id reference users, pets and rooms.
+- cancellation_requests.booking_id and booking_logs.booking_id reference bookings.
+- cancellation_requests.reviewed_by and booking_logs.actor_user_id reference users; allow null where the ER diagram requires it.
 
-## Existing data and later SQL edits
+Agree matching ID types before implementing these constraints. Foreign keys ensure referenced rows exist; they do not check pet ownership, date conflicts, payment rules or staff authorization. Those rules still belong in the services.
 
-Docker initialization runs only for a fresh data directory. Restarting the container does not apply edited SQL files. Apply reviewed changes explicitly to the correct database; do not delete your volume to update a schema.
+Preserve booking history. Avoid cascading deletion of a user, pet or room into its bookings. The simplest approach is to reject deletion of referenced records and deactivate rooms instead; agree any future archive behavior together.
 
-For example, with the template user `pawinn`, apply a reviewed account schema script:
+## Working as four people
+
+Each teammate runs their own local copy of the application and this database. One shared database means shared by that environment's services, not one remote database that all teammates must use.
+
+Members 2, 3 and 4 own their SQL folders. Member 3 maintains `init.sql`, Compose and shared settings. Account and room schemas must exist before booking's foreign keys can be created. The booking owner can use agreed test fixtures while those schemas are being implemented. Review changes to referenced columns with affected teammates.
+
+## Existing volumes and SQL changes
+
+Docker initialization runs only for a fresh data directory. Changing `POSTGRES_DB` or restarting does not migrate existing data or apply edited SQL.
+
+If you already ran the older separate-database setup, keep its databases and volume. After taking a backup, create the new `pawinn` database if missing, using a database GUI or, with the sample login:
 
 ```powershell
-docker compose exec -T postgres psql -U pawinn -d pawinn_account -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/account/schema.sql
+docker compose exec -T postgres psql -U pawinn -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE pawinn;"
 ```
 
-Use your configured user if different. This example runs the entire file: once tables contain data, write incremental SQL updates rather than rerunning destructive CREATE/DROP or seed statements. Keep any deliberate schema updates with the owning database's SQL files.
+Run that only if `pawinn` does not exist. Implement/review the schemas before applying them. Any existing application data needs an explicit reviewed transfer; this repository change does not copy or delete it.
 
-Stop the database with `docker compose down`; this keeps its data volume. No database reset is needed for this restructuring.
+For a reviewed account schema script, using the sample username and shared database:
 
-## Room inventory
+```powershell
+docker compose exec -T postgres psql -U pawinn -d pawinn -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/account/schema.sql
+```
 
-The agreed seed target is five rooms of each type: Cozy Den C101-C105, Garden Suite G101-G105 and Cat Loft L101-L105 (15 physical rooms). Member 3 implements that inventory in `room/seed.sql` after the schema exists. The current standalone frontend still uses its earlier two-per-type demo inventory; Member 1 updates it when integrating or refreshing the demo.
+Use your configured username/database if different. Initial schema and seed files are not an automatic migration system. Once tables hold data, apply incremental SQL updates rather than rerunning destructive statements.
 
-## Scope
+`docker compose down` stops the setup and keeps its data volume. Do not remove a volume to apply this change.
 
-Only the PostgreSQL service is runnable in Compose today. Backend containers, proxy integration and CI/CD still need implementation. Continue running the existing frontend separately as described in the root README.
+## Room inventory and current scope
 
-References: [official PostgreSQL image initialization](https://hub.docker.com/_/postgres) and [Docker Compose environment interpolation](https://docs.docker.com/reference/compose-file/interpolation/).
+The agreed seed target is five rooms per type: Cozy Den C101-C105, Garden Suite G101-G105 and Cat Loft L101-L105 (15 rooms). Member 3 implements this in `room/seed.sql`. The standalone frontend still uses its earlier two-per-type demo inventory; Member 1 updates it when integrating or refreshing the demo.
+
+Only PostgreSQL is currently runnable in Compose. Backend implementations, table/seed SQL, proxy integration and CI/CD remain team tasks. The existing frontend runs independently using local demo data.
+
+References: [official PostgreSQL image initialization](https://hub.docker.com/_/postgres), [PostgreSQL foreign keys](https://www.postgresql.org/docs/17/ddl-constraints.html#DDL-CONSTRAINTS-FK) and [Docker Compose interpolation](https://docs.docker.com/reference/compose-file/interpolation/).

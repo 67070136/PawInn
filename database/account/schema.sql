@@ -1,3 +1,4 @@
 -- TODO(Member 2): Initial tables and constraints for users and pets.
--- Target database: pawinn_account in the single shared PostgreSQL instance.
+-- Target: public schema in shared POSTGRES_DB (default pawinn).
 -- Agree ID types and field names with docs/api.md before implementation.
+-- Define users.user_id and pets.pet_id PKs; pets.owner_id references users.

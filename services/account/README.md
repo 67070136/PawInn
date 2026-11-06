@@ -2,7 +2,7 @@
 
 Owner: Member 2. Status: TODO scaffold; this service does not run yet.
 
-Own registration/login, password hashing, role checks, user profile and pet ownership. Database: `pawinn_account`; suggested port: 3001.
+Own registration/login, password hashing, role checks, user profile and pet ownership. Shared database: `pawinn`; suggested port: 3001.
 
 ## Start here
 
@@ -26,8 +26,8 @@ Own registration/login, password hashing, role checks, user profile and pet owne
 | `tests/` | Service behavior tests |
 | `Dockerfile` | Build this service's image after it works locally |
 
-Read `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER` and `POSTGRES_PASSWORD` from the root environment settings and select `pawinn_account` in your pg pool. The shared instance is on localhost for Node processes running on your computer; future Compose service containers use host `postgres` and port 5432. The owner must load/pass environment variables at startup; Node does not automatically load root `.env`. Authentication uses the agreed token settings; booking also needs account/room URLs.
+Read `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` from root environment settings. All three services select the same database (`pawinn` by default) in their pg pools. The shared instance is on localhost for Node processes running on your computer; future Compose service containers use host `postgres` and port 5432. The owner must load/pass environment variables at startup; Node does not automatically load root `.env`. Authentication uses the agreed token settings. Shared reads and SQL joins are allowed; booking does not need internal account/room HTTP calls just to verify pet ownership or read room information.
 
-Keep all SQL in `database/account/`, not duplicated here. Document safe incremental updates once tables contain data; initial SQL is not an automatic migration system.
+Keep all SQL in `database/account/`, not duplicated here. This folder groups ownership; its tables live alongside the other services' tables in the same public schema. Primarily write your own tables and coordinate changes to referenced columns with affected teammates. Document safe incremental updates once tables contain data; initial SQL is not an automatic migration system.
 
 Keep this flat. Add another file only when it makes the code easier to follow.

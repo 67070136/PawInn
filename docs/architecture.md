@@ -14,14 +14,16 @@ PawInn is a college project with an HTML/Tailwind/Alpine frontend and three inde
 ## Shared PostgreSQL setup
 
 - The main `compose.yaml` currently starts one PostgreSQL instance. Member 3 adds the frontend, three services and Nginx proxy when they are implemented.
-- One PostgreSQL container holds `pawinn_account`, `pawinn_room` and `pawinn_booking`. Each service queries its own database. See [database setup](../database/README.md).
-- All SQL lives in `database/`: `init.sql` creates the databases; `account/`, `room/` and `booking/` each contain `schema.sql` and `seed.sql`, owned by the corresponding service developer.
-- Use one local-demo login for simplicity. Separation is by team convention; this setup does not enforce per-service database permissions. Each teammate runs their own local instance, not a shared remote database.
+- One PostgreSQL container holds the single shared `pawinn` application database. All three services use the same `POSTGRES_DB` setting and the same seven tables in the default public schema. See [database setup](../database/README.md).
+- All SQL lives in `database/`. The PostgreSQL image creates `POSTGRES_DB`; `init.sql` loads account, room and booking schemas before their seeds. The three SQL folders group work by teammate; they are not separate databases or PostgreSQL schemas.
+- Use one local-demo login for simplicity. Each service primarily writes its own tables; shared reads/joins are allowed. Table ownership is a team agreement, not a database permission boundary. Each teammate runs their own local instance, not a shared remote database.
 - `infra/nginx.conf` will route `/api/auth`, `/api/users` and `/api/pets` to account; `/api/room-types` and `/api/rooms` to room; `/api/availability`, `/api/bookings` and `/api/cancellations` to booking.
 - The proxy will serve the frontend origin by forwarding other paths to the frontend container. Its Nginx config serves static assets.
-- Booking calls account to check pet ownership and room to read active rooms and prices. Store IDs for references to other services; do not create cross-database foreign keys or read another service's database.
+- Booking can read/join users, pets, rooms and room_types directly in the shared database to verify ownership, active inventory and prices. Internal HTTP calls are not required just to look up these rows.
+- Define normal foreign keys from bookings to users/pets/rooms, pets to users, rooms to room_types, and cancellations/logs to bookings and relevant users. Agree matching ID types and preserve booking history when records are deleted.
+- This is a shared-database service architecture. The three Express apps can run separately, but schema changes are coupled and must be coordinated.
 - Booking owns date availability. It must prevent overlapping reservations atomically, including two requests arriving together. Checkout dates are exclusive: a new stay can begin on a previous stay's checkout date.
-- Use simple HTTP calls with timeouts. No message broker, service discovery platform or extra payment service is needed.
+- The frontend calls the services' HTTP APIs. No message broker, service discovery platform or extra payment service is needed.
 
 ## Files inside a service
 

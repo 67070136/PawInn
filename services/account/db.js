@@ -1,4 +1,5 @@
 // TODO(Member 2): PostgreSQL pool and parameterized SQL for users and pets.
-// Use POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER and POSTGRES_PASSWORD.
-// Select pawinn_account on the ONE PostgreSQL instance; query only this service's DB.
-// SQL lives in ../../database/account/. Setup: ../../database/README.md.
+// All services use POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER,
+// POSTGRES_PASSWORD and POSTGRES_DB (default pawinn).
+// Primarily write your own tables; shared reads/JOINs are allowed.
+// SQL: ../../database/account/. Setup: ../../database/README.md.

@@ -1,28 +1,15 @@
--- One PostgreSQL instance, three service-owned databases.
--- Docker runs this on the FIRST start with an empty data directory.
--- Schema/seed files are TODO starter files until each teammate implements them.
+-- One application database, created by the PostgreSQL image from POSTGRES_DB.
+-- This script runs connected to that database on a fresh data directory.
+-- Service folders organize SQL ownership; all tables use the public schema.
+-- Schema/seed files remain TODO starters until teammates implement them.
 \set ON_ERROR_STOP on
 
-SELECT 'CREATE DATABASE pawinn_account'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'pawinn_account')
-\gexec
-
-SELECT 'CREATE DATABASE pawinn_room'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'pawinn_room')
-\gexec
-
-SELECT 'CREATE DATABASE pawinn_booking'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'pawinn_booking')
-\gexec
-
-\connect pawinn_account
+-- Create parent tables before tables that reference them with foreign keys.
 \ir account/schema.sql
-\ir account/seed.sql
-
-\connect pawinn_room
 \ir room/schema.sql
-\ir room/seed.sql
-
-\connect pawinn_booking
 \ir booking/schema.sql
+
+-- Seed referenced users/pets/rooms before their bookings.
+\ir account/seed.sql
+\ir room/seed.sql
 \ir booking/seed.sql

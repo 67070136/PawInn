@@ -1,3 +1,4 @@
 -- TODO(Member 3): Initial tables and constraints for room_types and rooms.
--- Target database: pawinn_room in the single shared PostgreSQL instance.
+-- Target: public schema in shared POSTGRES_DB (default pawinn).
 -- Agree ID types and field names with docs/api.md before implementation.
+-- Define room_types.room_type_id and rooms.room_id PKs; rooms references room_types.

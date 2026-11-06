@@ -4,7 +4,7 @@ PawInn is a customer-facing pet hotel portal web app.
 
 ## Project status
 
-The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. Compose can start one PostgreSQL instance containing three service-owned databases. Backend services, table/seed SQL and deployment pipelines remain TODO scaffolds. The full application is not integrated yet.
+The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. Compose can start one PostgreSQL instance containing one shared application database, `pawinn`. Backend services, table/seed SQL and deployment pipelines remain TODO scaffolds. The full application is not integrated yet.
 
 ## Team of four: start here
 
@@ -28,7 +28,7 @@ PawInn/
 │   ├── account/             # Member 2
 │   ├── room/                # Member 3
 │   └── booking/             # Member 4
-├── database/                # One PostgreSQL instance; account/room/booking SQL
+├── database/                # Shared pawinn database; SQL grouped by table owner
 ├── infra/                   # Planned Nginx API proxy
 ├── .github/workflows/       # Member 3 adds one CI workflow here
 ├── docs/                    # Team plan, API agreement, architecture and diagrams
@@ -50,7 +50,7 @@ docker compose up -d postgres
 docker compose ps
 ```
 
-The three databases are `pawinn_account`, `pawinn_room` and `pawinn_booking`, all on the same PostgreSQL instance. SQL is still starter notes, so they initially contain no application tables. Each teammate runs this setup locally. See [database setup and connections](database/README.md) for ports, credentials, SQL ownership and applying later changes.
+All three Express services connect to the same `pawinn` database using `POSTGRES_DB` from `.env`. Its seven planned tables can use normal foreign keys and SQL joins. SQL files are still starter notes, so no application tables are created yet. Each teammate runs this setup locally. See [database setup and connections](database/README.md) for ports, credentials, SQL ownership and applying later changes.
 
 ## Product direction
 
@@ -103,7 +103,7 @@ Open http://localhost:8080. The image builds the static assets and serves them w
 
 ## Architecture
 
-The planned backend has account, room and booking services, with one local PostgreSQL container holding three separate databases. The frontend's API adapter modules currently call the local demo model; replace them with service requests using `api/client.js`, and update the stores/page code that still reads demo data. The backend will enforce login, ownership, roles and booking rules; payment and refunds stay simulated for the course.
+The backend plan has three separately running services (account, room and booking) sharing one PostgreSQL container and one `pawinn` database. Each service primarily writes its own tables; shared reads/joins and real foreign keys keep this college project simple. Database changes must be coordinated because the services share its structure. The frontend's API adapter modules currently call the local demo model; replace them with service requests using `api/client.js`, and update the stores/page code that still reads demo data. The backend will enforce login, ownership, roles and booking rules; payment and refunds stay simulated for the course.
 
 Shared HTML fragments live in `frontend/src/partials/` and are expanded during the build. Alpine components live in `frontend/src/js/pages/`; global state lives in `stores/`. All illustrations are original local SVG assets. Tailwind and Alpine are bundled locally, so the built frontend needs no CDN.
 

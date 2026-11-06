@@ -1,3 +1,6 @@
 -- TODO(Member 4): Initial tables and constraints for bookings, cancellation_requests and booking_logs.
--- Target database: pawinn_booking in the single shared PostgreSQL instance.
+-- Target: public schema in shared POSTGRES_DB (default pawinn).
 -- Agree ID types and field names with docs/api.md before implementation.
+-- Bookings reference users, pets and rooms with real FKs in this same database.
+-- Cancellations/logs reference bookings; reviewer/actor IDs reference users.
+-- Preserve booking history; do not cascade-delete it with users, pets or rooms.

@@ -1,3 +1,3 @@
 -- TODO(Member 2): Insert invented demo data for users and pets.
--- Target database: pawinn_account. Keep IDs consistent with API examples.
+-- Target: shared POSTGRES_DB (default pawinn). Keep IDs consistent across folders.
 -- Never use real user data.

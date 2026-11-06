@@ -12,6 +12,8 @@ This is the team's starting contract, not a list of implemented endpoints. Confi
 - Success: `{"data": ...}`. Error: `{"message": "A useful explanation"}`.
 - Use 201 for creation; 200 for normal success; 204 for successful deletion; 400 invalid input; 401 unauthenticated; 403 forbidden; 404 missing; 409 conflicting state.
 - Each service exposes `GET /health`.
+- All three services connect to the shared `pawinn` database. Use matching PK/FK types across the seven tables; API IDs remain strings at the HTTP boundary.
+- Services primarily write their own tables. Shared reads/joins are allowed for ownership, availability and prices; internal HTTP lookups are optional rather than required.
 - Keep these shapes independent of frontend demo storage; Member 1 adapts API responses to page state.
 
 ## Member 2: account
@@ -22,16 +24,16 @@ This is the team's starting contract, not a list of implemented endpoints. Confi
 | POST /api/auth/login | Accept email/password; return token and public user |
 | GET /api/users/me | Return the signed-in user |
 | GET /api/pets | Return the customer's pets |
-| GET /api/pets/:id | Return an owned pet; booking calls this with the customer's token to verify ownership |
+| GET /api/pets/:id | Return an owned pet; booking can verify ownership directly against the shared pets table |
 | POST /api/pets | Create an owned pet |
 | PATCH /api/pets/:id | Update an owned pet |
-| DELETE /api/pets/:id | Delete only when no active booking prevents removal |
+| DELETE /api/pets/:id | Delete an owned pet only when no booking references it; preserve booking history |
 
 Public user: `{id, name, email, phone, role}`; never return password hashes.
 Pet: `{id, ownerId, name, species, breed, birthDate, notes}`.
 Roles: CUSTOMER, STAFF. Species: Dog, Cat.
 Seed a staff account; registration must not accept a caller-selected STAFF role.
-Account and booking owners must coordinate the active-booking check before deleting/changing a booked pet's species.
+Account and booking owners coordinate pets/bookings foreign keys and active-booking checks before changing a booked pet's species. A normal FK prevents deleting a referenced pet; reject that deletion rather than cascading away booking history.
 
 ## Member 3: room
 
@@ -44,7 +46,7 @@ Account and booking owners must coordinate the active-booking check before delet
 Room type: `{id, name, description, species, pricePerNight}`.
 Room: `{id, roomTypeId, roomNumber, isActive}`.
 Start with seed SQL for inventory; add more management endpoints only if the team needs them.
-Define what happens to existing reservations before allowing an occupied/reserved room to be deactivated.
+Define what happens to existing reservations before allowing an occupied/reserved room to be deactivated. All three types share the agreed inventory target of five physical rooms each (15 total).
 
 ## Member 4: booking
 
