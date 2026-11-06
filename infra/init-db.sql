@@ -1,0 +1,5 @@
+-- TODO(Member 3): Create pawinn_account, pawinn_room and pawinn_booking.
+-- Use one PostgreSQL container for the local demo.
+-- Each service owns its schema.sql and seed.sql; do not define their tables here.
+-- PostgreSQL init scripts run only when its data directory is first initialized.
+-- Do not delete an existing data volume just to apply a later schema change.

@@ -1,0 +1,8 @@
+# TODO(Member 3): Implement the single local application Compose file.
+# Start frontend, account (3001), room (3002), booking (3003), PostgreSQL and Nginx.
+# PostgreSQL holds pawinn_account, pawinn_room and pawinn_booking.
+# Use infra/init-db.sql for database creation and each service's schema.sql/seed.sql.
+# Mount infra/nginx.conf in the proxy; publish its frontend/API port on localhost.
+# Pass each service only its own DATABASE_URL plus required auth/service settings.
+# Add health checks, a database volume and startup readiness checks.
+# This is a starter note, not a runnable Compose configuration.

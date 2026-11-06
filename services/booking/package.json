@@ -1,0 +1,7 @@
+{
+  "name": "pawinn-booking",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TODO scaffold: booking service. See README.md for implementation tasks."
+}

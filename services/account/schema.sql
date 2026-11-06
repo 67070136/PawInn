@@ -1,0 +1,2 @@
+-- TODO(Member 2): Initial tables and constraints for users and pets.
+-- Agree ID types and field names with docs/api.md before implementation.

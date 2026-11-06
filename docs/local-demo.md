@@ -1,6 +1,6 @@
 # PawInn frontend demo
 
-The frontend is a browser-local prototype. Backend, PostgreSQL, Jenkins and image publishing are not connected yet. The existing root Compose and CI/CD files remain placeholders.
+The frontend is a browser-local prototype. Backend, PostgreSQL and Jenkins are not connected yet. Compose and Jenkins files are TODO starter notes; GitHub Actions has an implementation guide rather than an active workflow. See [the team work plan](team.md) for who implements each part.
 
 ## Customer journey
 

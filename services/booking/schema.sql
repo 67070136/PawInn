@@ -1,0 +1,2 @@
+-- TODO(Member 4): Initial tables and constraints for bookings, cancellation_requests and booking_logs.
+-- Agree ID types and field names with docs/api.md before implementation.

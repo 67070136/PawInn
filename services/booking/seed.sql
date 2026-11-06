@@ -1,0 +1,2 @@
+-- TODO(Member 4): Insert invented demo data for bookings, cancellation_requests and booking_logs.
+-- Keep seed IDs consistent with other services' examples; never use real user data.

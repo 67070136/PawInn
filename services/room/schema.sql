@@ -1,0 +1,2 @@
+-- TODO(Member 3): Initial tables and constraints for room_types and rooms.
+-- Agree ID types and field names with docs/api.md before implementation.

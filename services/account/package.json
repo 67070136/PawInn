@@ -1,0 +1,7 @@
+{
+  "name": "pawinn-account",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TODO scaffold: account service. See README.md for implementation tasks."
+}

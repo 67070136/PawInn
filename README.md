@@ -4,7 +4,40 @@ PawInn is a customer-facing pet hotel portal web app.
 
 ## Project status
 
-The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. The backend services, database migrations and deployment pipelines are still scaffolds.
+The eight-page frontend is implemented with HTML, Tailwind CSS and Alpine.js. It runs independently using sample browser-local data. The three backend services and deployment configuration are TODO scaffolds, with instructions for their owners. The full application cannot run through Compose yet.
+
+## Team of four: start here
+
+Read [the team work plan](docs/team.md) for assignments, implementation order and the pull request workflow. Use [the API agreement](docs/api.md) before connecting services.
+
+| Person | Main work |
+| --- | --- |
+| You / Member 1 | Frontend integration, customer/staff journeys, README and demo |
+| Member 2 | Account service: login, users and pets |
+| Member 3 | Room service, Docker Compose, GitHub Actions and Jenkins |
+| Member 4 | Booking service: availability, reservations, mock payment and cancellations |
+
+Replace these labels with your names. Everyone writes tests for their own work and helps with final integration.
+
+## Simple folder structure
+
+```text
+PawInn/
+├── frontend/                # Existing HTML, Tailwind and Alpine website
+├── services/
+│   ├── account/             # Member 2
+│   ├── room/                # Member 3
+│   └── booking/             # Member 4
+├── infra/                   # Nginx proxy and PostgreSQL initialization
+├── .github/workflows/       # Member 3 adds one CI workflow here
+├── docs/                    # Team plan, API agreement, architecture and diagrams
+├── tests/                   # Whole-project integration checklist
+├── compose.yaml             # TODO: local application containers
+├── Jenkinsfile              # TODO: local deployment pipeline
+└── .env.example             # Safe sample configuration
+```
+
+Each backend service starts flat: `server.js`, `routes.js`, `db.js`, `schema.sql`, `seed.sql`, `package.json`, `Dockerfile` and `tests/`. Each has a README explaining its tasks. Add files only when working code needs them; generate lockfiles with npm when dependencies are installed.
 
 ## Product direction
 
@@ -57,8 +90,8 @@ Open http://localhost:8080. The image builds the static assets and serves them w
 
 ## Architecture
 
-The planned backend has account, room and booking services, each with its own PostgreSQL database. The frontend's API adapter modules currently call the local demo model; they can later be replaced with service requests using `api/client.js`. Demo role checks and availability are not production security or cross-client concurrency guarantees. Real authentication, authorization, atomic booking constraints, payments and audit persistence must be enforced by the backend.
+The planned backend has account, room and booking services, with one local PostgreSQL container holding three separate databases. The frontend's API adapter modules currently call the local demo model; replace them with service requests using `api/client.js`, and update the stores/page code that still reads demo data. The backend will enforce login, ownership, roles and booking rules; payment and refunds stay simulated for the course.
 
 Shared HTML fragments live in `frontend/src/partials/` and are expanded during the build. Alpine components live in `frontend/src/js/pages/`; global state lives in `stores/`. All illustrations are original local SVG assets. Tailwind and Alpine are bundled locally, so the built frontend needs no CDN.
 
-See [the local demo walkthrough](docs/local-demo.md) for the customer-to-staff review flow.
+See [the architecture notes](docs/architecture.md), [local demo walkthrough](docs/local-demo.md) and [integration checklist](tests/README.md).
